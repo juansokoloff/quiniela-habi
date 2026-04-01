@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation'
-import { createClient, getServerUser } from '@/lib/supabase/server'
+import { createAdminClient, getServerUser } from '@/lib/supabase/server'
 import PaymentUpload from '@/components/dashboard/PaymentUpload'
 
 export default async function PaymentPage() {
   const user = await getServerUser()
   if (!user) redirect('/login')
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   const { data: profile } = await supabase
     .from('profiles')

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createClient, getServerUser } from '@/lib/supabase/server'
+import { createAdminClient, getServerUser } from '@/lib/supabase/server'
 import MatchCard from '@/components/dashboard/MatchCard'
 import { Match, Prediction, MatchPhase } from '@/types'
 import { phaseLabel } from '@/lib/scoring'
@@ -9,7 +9,7 @@ const PHASE_ORDER: MatchPhase[] = ['group', 'round_of_16', 'quarter_final', 'sem
 export default async function PredictionsPage() {
   const user = await getServerUser()
   if (!user) redirect('/login')
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   const { data: profile } = await supabase
     .from('profiles')

@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 
 export default async function AdminDashboard() {
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   const [
     { count: totalUsers },

@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import PaymentActions from '@/components/admin/PaymentActions'
 
 export default async function AdminPaymentsPage() {
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   const { data: receipts } = await supabase
     .from('payment_receipts')

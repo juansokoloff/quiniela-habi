@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, getServerUser } from '@/lib/supabase/server'
+import { createAdminClient, getServerUser } from '@/lib/supabase/server'
 import { fetchWorldCupMatches, transformMatch } from '@/lib/football-api/client'
 import { calculatePoints } from '@/lib/scoring'
 import { MatchPhase } from '@/types'
@@ -12,12 +12,12 @@ export async function POST(request: NextRequest) {
   if (authHeader !== `Bearer ${secret}`) {
     const user = await getServerUser()
     if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   let matches
   try {

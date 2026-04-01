@@ -1,4 +1,4 @@
-import { createClient, getServerUser } from '@/lib/supabase/server'
+import { createAdminClient, getServerUser } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale'
 export default async function StandingsPage() {
   const user = await getServerUser()
   if (!user) redirect('/login')
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   const { data: standings } = await supabase
     .from('standings')

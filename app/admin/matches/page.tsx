@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { phaseLabel } from '@/lib/scoring'
@@ -6,7 +6,7 @@ import { MatchPhase } from '@/types'
 import SyncMatchesButton from '@/components/admin/SyncMatchesButton'
 
 export default async function AdminMatchesPage() {
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   const { data: matches } = await supabase
     .from('matches')

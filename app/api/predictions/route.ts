@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, getServerUser } from '@/lib/supabase/server'
+import { createAdminClient, getServerUser } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
   const user = await getServerUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   const { matchId, predictedHome, predictedAway } = await request.json()
 
