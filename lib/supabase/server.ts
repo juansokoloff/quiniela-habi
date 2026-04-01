@@ -26,12 +26,15 @@ export async function createClient() {
   )
 }
 
-// Use getSession() in server components — the proxy already validates the JWT
-// getUser() makes a network round-trip to Supabase which fails with new sb_publishable keys
+// Read user from request headers injected by the proxy
+// The proxy validates the JWT — server components just trust the header
 export async function getServerUser() {
-  const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  return session?.user ?? null
+  const { headers } = await import('next/headers')
+  const headersList = await headers()
+  const userId = headersList.get('x-user-id')
+  const userEmail = headersList.get('x-user-email')
+  if (!userId) return null
+  return { id: userId, email: userEmail ?? '' }
 }
 
 export async function createAdminClient() {
