@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getServerUser } from '@/lib/supabase/server'
 import MatchCard from '@/components/dashboard/MatchCard'
 import { Match, Prediction, MatchPhase } from '@/types'
 import { phaseLabel } from '@/lib/scoring'
@@ -7,11 +7,10 @@ import { phaseLabel } from '@/lib/scoring'
 const PHASE_ORDER: MatchPhase[] = ['group', 'round_of_16', 'quarter_final', 'semi_final', 'final']
 
 export default async function PredictionsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getServerUser()
   if (!user) redirect('/login')
+  const supabase = await createClient()
 
-  // Check payment
   const { data: profile } = await supabase
     .from('profiles')
     .select('payment_status')

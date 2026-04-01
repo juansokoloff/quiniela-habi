@@ -1,12 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getServerUser } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import AdminRoleToggle from '@/components/admin/AdminRoleToggle'
 
 export default async function AdminUsersPage() {
+  const user = await getServerUser()
   const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
 
   const { data: users } = await supabase
     .from('profiles')

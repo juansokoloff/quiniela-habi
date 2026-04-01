@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getServerUser } from '@/lib/supabase/server'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -35,12 +35,9 @@ Responde ÚNICAMENTE con el siguiente formato JSON:
 No incluyas nada fuera del JSON.`
 
 export async function POST(request: NextRequest) {
+  const user = await getServerUser()
+  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  }
 
   const { receiptUrl, receiptId } = await request.json()
 

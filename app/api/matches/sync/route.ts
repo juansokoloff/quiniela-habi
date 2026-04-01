@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getServerUser } from '@/lib/supabase/server'
 import { fetchWorldCupMatches, transformMatch } from '@/lib/football-api/client'
 import { calculatePoints } from '@/lib/scoring'
 import { MatchPhase } from '@/types'
 
 // This endpoint can be called by a Vercel cron job or manually by the admin
 export async function POST(request: NextRequest) {
-  // Verify secret to avoid unauthorized calls
   const authHeader = request.headers.get('authorization')
   const secret = process.env.CRON_SECRET || 'quiniela-habi-sync-2026'
 
   if (authHeader !== `Bearer ${secret}`) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getServerUser()
     if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-
+    const supabase = await createClient()
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
