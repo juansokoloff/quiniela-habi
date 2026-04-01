@@ -21,7 +21,12 @@ El comprobante es válido si cumple TODAS las siguientes condiciones:
 
 4. ESTADO: El comprobante debe mostrar que el pago fue EXITOSO o COMPLETADO. No se aceptan pagos pendientes o fallidos.
 
-5. FECHA: El comprobante debe ser de 2025 o 2026.
+5. MONTO:
+   - COLOMBIA: El monto debe ser de $20,000 COP (veinte mil pesos colombianos). Acepta variaciones como 20.000, 20,000, $20000, etc.
+   - MÉXICO: El monto debe ser de $100 MXN (cien pesos mexicanos). Acepta variaciones como $100.00, 100.00, etc.
+   Si el monto es mayor al esperado, aprueba igualmente. Solo rechaza si el monto es MENOR al requerido.
+
+6. FECHA: El comprobante debe ser de 2025 o 2026.
 
 Si no puedes leer claramente los datos del comprobante, rechaza e indica qué información no fue legible.
 
