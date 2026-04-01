@@ -1,5 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 
 export async function createClient() {
   const cookieStore = await cookies()
@@ -29,7 +29,6 @@ export async function createClient() {
 // Read user from request headers injected by the proxy
 // The proxy validates the JWT — server components just trust the header
 export async function getServerUser() {
-  const { headers } = await import('next/headers')
   const headersList = await headers()
   const userId = headersList.get('x-user-id')
   const userEmail = headersList.get('x-user-email')
