@@ -42,26 +42,46 @@ No incluyas nada fuera del JSON.`
 export async function POST(request: NextRequest) {
   const user = await getServerUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  const supabase = await createAdminClient()
+  const supabase = createAdminClient()
 
-  const { receiptUrl, receiptId } = await request.json()
+  const { receiptUrl, receiptId, filePath } = await request.json()
 
-  if (!receiptUrl || !receiptId) {
+  if (!receiptId || !filePath) {
     return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 })
   }
 
-  // Fetch the image from Supabase storage
-  const { data: imageData } = await supabase.storage
+  // Fetch the file from Supabase storage
+  const { data: fileData } = await supabase.storage
     .from('payment-receipts')
-    .download(`${user.id}/${receiptId}`)
+    .download(filePath)
 
-  if (!imageData) {
+  if (!fileData) {
     return NextResponse.json({ error: 'No se pudo obtener el comprobante' }, { status: 400 })
   }
 
-  const arrayBuffer = await imageData.arrayBuffer()
+  const arrayBuffer = await fileData.arrayBuffer()
   const base64 = Buffer.from(arrayBuffer).toString('base64')
-  const mimeType = imageData.type || 'image/jpeg'
+  const mimeType = fileData.type || 'image/jpeg'
+
+  // Build content for Claude - PDFs use 'document' type, images use 'image' type
+  const isPdf = mimeType === 'application/pdf'
+  const fileContent = isPdf
+    ? {
+        type: 'document' as const,
+        source: {
+          type: 'base64' as const,
+          media_type: 'application/pdf' as const,
+          data: base64,
+        },
+      }
+    : {
+        type: 'image' as const,
+        source: {
+          type: 'base64' as const,
+          media_type: mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+          data: base64,
+        },
+      }
 
   // Send to Claude for analysis
   const message = await anthropic.messages.create({
@@ -71,14 +91,7 @@ export async function POST(request: NextRequest) {
       {
         role: 'user',
         content: [
-          {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-              data: base64,
-            },
-          },
+          fileContent,
           {
             type: 'text',
             text: PAYMENT_VALIDATION_PROMPT,

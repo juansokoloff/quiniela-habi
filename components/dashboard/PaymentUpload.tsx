@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Upload, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
 interface PaymentUploadProps {
@@ -48,47 +47,30 @@ export default function PaymentUpload({ userId }: PaymentUploadProps) {
     setError(null)
     setState('uploading')
 
-    const supabase = createClient()
-    const receiptId = `${Date.now()}-${file.name}`
-    const filePath = `${userId}/${receiptId}`
+    // Upload file via server-side API (bypasses RLS)
+    const formData = new FormData()
+    formData.append('file', file)
 
-    const { error: uploadError } = await supabase.storage
-      .from('payment-receipts')
-      .upload(filePath, file)
+    const uploadRes = await fetch('/api/payment/upload', {
+      method: 'POST',
+      body: formData,
+    })
 
-    if (uploadError) {
-      setError('Error al subir el archivo. Intenta nuevamente.')
+    if (!uploadRes.ok) {
+      const err = await uploadRes.json()
+      setError(err.error || 'Error al subir el archivo. Intenta nuevamente.')
       setState('idle')
       return
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('payment-receipts')
-      .getPublicUrl(filePath)
-
-    // Save receipt record
-    const { data: receipt } = await supabase
-      .from('payment_receipts')
-      .insert({
-        user_id: userId,
-        receipt_url: publicUrl,
-        status: 'pending',
-      })
-      .select()
-      .single()
-
-    if (!receipt) {
-      setError('Error al registrar el comprobante.')
-      setState('idle')
-      return
-    }
+    const { receiptId, filePath, receiptUrl } = await uploadRes.json()
 
     // Validate with Claude
     setState('analyzing')
     const response = await fetch('/api/payment-validation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ receiptUrl: publicUrl, receiptId: receipt.id }),
+      body: JSON.stringify({ receiptUrl, receiptId, filePath }),
     })
 
     const data = await response.json()

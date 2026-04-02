@@ -1,0 +1,65 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createAdminClient, getServerUser } from '@/lib/supabase/server'
+
+export async function POST(request: NextRequest) {
+  const user = await getServerUser()
+  if (!user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
+  const formData = await request.formData()
+  const file = formData.get('file') as File | null
+
+  if (!file) {
+    return NextResponse.json({ error: 'No se proporcionó archivo' }, { status: 400 })
+  }
+
+  const supabase = createAdminClient()
+  const fileName = `${Date.now()}-${file.name}`
+  const filePath = `${user.id}/${fileName}`
+
+  // Upload file to storage
+  const { error: uploadError } = await supabase.storage
+    .from('payment-receipts')
+    .upload(filePath, file, {
+      contentType: file.type,
+      upsert: false,
+    })
+
+  if (uploadError) {
+    console.error('Storage upload error:', uploadError)
+    return NextResponse.json(
+      { error: 'Error al subir el archivo' },
+      { status: 500 }
+    )
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('payment-receipts')
+    .getPublicUrl(filePath)
+
+  // Insert payment receipt record
+  const { data: receipt, error: insertError } = await supabase
+    .from('payment_receipts')
+    .insert({
+      user_id: user.id,
+      receipt_url: publicUrl,
+      status: 'pending',
+    })
+    .select()
+    .single()
+
+  if (insertError || !receipt) {
+    console.error('Insert error:', insertError)
+    return NextResponse.json(
+      { error: 'Error al registrar el comprobante' },
+      { status: 500 }
+    )
+  }
+
+  return NextResponse.json({
+    receiptId: receipt.id,
+    filePath,
+    receiptUrl: publicUrl,
+  })
+}
