@@ -112,7 +112,7 @@ export default async function RulesPage() {
           />
           <Example
             prediction="Colombia 2 - 1 Brasil"
-            result="Brasil 1 - 0 Colombia"
+            result="Colombia 0 - 3 Brasil"
             points={0}
             detail="No acerto ganador ni goles ni diferencia"
           />
