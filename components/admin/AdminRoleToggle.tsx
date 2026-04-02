@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 
 interface AdminRoleToggleProps {
   userId: string
@@ -15,10 +14,13 @@ export default function AdminRoleToggle({ userId, currentRole }: AdminRoleToggle
 
   async function handleToggle() {
     setLoading(true)
-    const supabase = createClient()
     const newRole = currentRole === 'admin' ? 'user' : 'admin'
 
-    await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
+    await fetch('/api/admin/role-toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, newRole }),
+    })
 
     setLoading(false)
     router.refresh()

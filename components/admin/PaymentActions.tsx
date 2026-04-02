@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 
 interface PaymentActionsProps {
   receiptId: string
@@ -18,19 +17,11 @@ export default function PaymentActions({ receiptId, userId, currentStatus }: Pay
 
   async function handleApprove() {
     setLoading('approve')
-    const supabase = createClient()
-
-    await Promise.all([
-      supabase
-        .from('payment_receipts')
-        .update({ status: 'approved', reviewed_at: new Date().toISOString() })
-        .eq('id', receiptId),
-      supabase
-        .from('profiles')
-        .update({ payment_status: 'approved', payment_validated_at: new Date().toISOString() })
-        .eq('id', userId),
-    ])
-
+    await fetch('/api/admin/payment-action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'approve', receiptId, userId }),
+    })
     setLoading(null)
     router.refresh()
   }
@@ -38,22 +29,11 @@ export default function PaymentActions({ receiptId, userId, currentStatus }: Pay
   async function handleReject() {
     if (!rejectReason.trim()) return
     setLoading('reject')
-    const supabase = createClient()
-
-    await Promise.all([
-      supabase
-        .from('payment_receipts')
-        .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
-        .eq('id', receiptId),
-      supabase
-        .from('profiles')
-        .update({
-          payment_status: 'rejected',
-          payment_rejection_reason: rejectReason,
-        })
-        .eq('id', userId),
-    ])
-
+    await fetch('/api/admin/payment-action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reject', receiptId, userId, reason: rejectReason }),
+    })
     setLoading(null)
     setShowRejectForm(false)
     router.refresh()
