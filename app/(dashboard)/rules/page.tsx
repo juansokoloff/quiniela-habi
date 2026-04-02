@@ -178,15 +178,39 @@ export default async function RulesPage() {
         </div>
       </Section>
 
-      {/* Info general */}
-      <Section title="Informacion general">
-        <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-          <li>Los resultados de los partidos se actualizan automaticamente.</li>
-          <li>Los puntos se calculan automaticamente una vez finalizado cada partido.</li>
-          <li>La tabla de posiciones se actualiza en tiempo real.</li>
-          <li>Para cualquier duda o reclamo, contacta al administrador.</li>
-        </ul>
+      {/* Contacto y disclaimer */}
+      <Section title="Contacto y aviso importante">
+        <div className="space-y-4">
+          <div>
+            <p className="text-gray-700 text-sm">
+              <strong>Administrador:</strong> Admin Name
+            </p>
+            <p className="text-gray-700 text-sm">
+              <strong>Contacto:</strong>{' '}
+              <a href="mailto:admin@example.com" className="text-green-700 hover:underline">
+                admin@example.com
+              </a>
+            </p>
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p className="text-amber-800 text-sm">
+              <strong>Aviso:</strong> Esta quiniela es una iniciativa particular entre empleados de Habi/Tuhabi.
+              No es una actividad oficial de la compania ni esta patrocinada o respaldada por ella.
+              La participacion es completamente voluntaria y bajo responsabilidad de cada participante.
+            </p>
+          </div>
+        </div>
       </Section>
+
+      {/* Powered by */}
+      <div className="text-center py-4">
+        <p className="text-xs text-gray-400">
+          Powered by{' '}
+          <a href="https://everyweekfantasy.com" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline font-medium">
+            everyweekfantasy.com
+          </a>
+        </p>
+      </div>
     </div>
   )
 }

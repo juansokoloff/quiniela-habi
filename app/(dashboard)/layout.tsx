@@ -26,6 +26,14 @@ export default async function DashboardLayout({
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {children}
       </main>
+      <footer className="py-4 text-center border-t border-gray-100">
+        <p className="text-xs text-gray-400">
+          Powered by{' '}
+          <a href="https://everyweekfantasy.com" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
+            everyweekfantasy.com
+          </a>
+        </p>
+      </footer>
     </div>
   )
 }

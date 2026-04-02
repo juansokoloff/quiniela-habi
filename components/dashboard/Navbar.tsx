@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Profile } from '@/types'
 import { Menu, X } from 'lucide-react'
+import Logo from '@/components/Logo'
 
 interface NavbarProps {
   profile: Profile
@@ -42,7 +43,10 @@ export default function Navbar({ profile }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-6">
-            <span className="font-bold text-lg">⚽ Quiniela Habi</span>
+            <Link href="/predictions" className="flex items-center gap-2">
+              <Logo size={28} />
+              <span className="font-bold text-lg">Quiniela Habi</span>
+            </Link>
             <div className="hidden sm:flex gap-4">
               {links.map(link => (
                 <Link
