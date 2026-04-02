@@ -11,13 +11,27 @@ Tu tarea es analizar el comprobante de pago que se te proporciona y determinar s
 CRITERIOS DE VALIDACIÓN:
 El comprobante es válido si cumple TODAS las siguientes condiciones:
 
-1. DESTINATARIO: El pago debe estar dirigido a Beneficiary Name (puede aparecer como "Beneficiary Name" o variaciones del nombre).
+1. DESTINATARIO: El pago debe estar dirigido a Beneficiary Full Name. Acepta cualquier combinación o variación del nombre, incluyendo:
+   - "Beneficiary Full Name"
+   - "Beneficiary Name"
+   - "Beneficiary Name"
+   - "Beneficiary Name"
+   - "Beneficiary Name"
+   - "Juan Sebastian"
+   - "Beneficiary Name"
+   - "BENEFICIARY FULL NAME"
+   - Cualquier otra combinación parcial que incluya al menos "Juan" y "Sokoloff", o "Juan Sebastian" como parte del nombre.
+   NO rechaces solo porque el nombre aparece en un orden diferente o abreviado.
 
 2. DATOS DE DESTINO SEGÚN EL PAÍS:
    - COLOMBIA: El pago debe ser a Nequi, a la llave BreB con número [REDACTED-NEQUI]. Acepta si aparece el número [REDACTED-NEQUI] como destinatario o llave de pago.
    - MÉXICO: El pago debe ser a la cuenta CLABE [REDACTED-CLABE]. Acepta si aparece este número CLABE como destino.
 
-3. TIPO DE DOCUMENTO: Debe ser un comprobante oficial de transferencia o pago bancario (Nequi, PSE, transferencia bancaria, SPEI, etc.). No se aceptan capturas de conversaciones ni promesas de pago.
+3. FORMATO Y AUTENTICIDAD DEL DOCUMENTO:
+   - Debe ser un comprobante OFICIAL generado por una entidad bancaria o fintech (Nequi, Bancolombia, Davivienda, BBVA, Banorte, SPEI, etc.).
+   - Debe tener apariencia institucional: logo del banco/app, formato estructurado, campos de información organizados.
+   - NO se aceptan: capturas de conversaciones de WhatsApp/chat, notas escritas a mano, promesas de pago, imágenes editadas con herramientas de diseño (sin formato bancario), texto plano sin formato oficial.
+   - Si el documento se ve manipulado, borroso de forma sospechosa o tiene inconsistencias visuales evidentes, recházalo.
 
 4. ESTADO: El comprobante debe mostrar que el pago fue EXITOSO o COMPLETADO. No se aceptan pagos pendientes o fallidos.
 
@@ -30,14 +44,12 @@ El comprobante es válido si cumple TODAS las siguientes condiciones:
 
 Si no puedes leer claramente los datos del comprobante, rechaza e indica qué información no fue legible.
 
-Responde ÚNICAMENTE con el siguiente formato JSON:
+Responde ÚNICAMENTE con el siguiente formato JSON (sin bloques de código markdown):
 {
   "approved": true/false,
   "reason": "Explicación breve de la decisión",
   "details": "Detalles adicionales observados en el comprobante"
-}
-
-No incluyas nada fuera del JSON.`
+}`
 
 export async function POST(request: NextRequest) {
   const user = await getServerUser()

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 
 interface PaymentToggleProps {
   userId: string
@@ -12,21 +11,22 @@ interface PaymentToggleProps {
 export default function PaymentToggle({ userId, currentStatus }: PaymentToggleProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const isApproved = currentStatus === 'approved'
+  const [status, setStatus] = useState(currentStatus)
+  const isApproved = status === 'approved'
 
   async function handleToggle() {
     setLoading(true)
-    const supabase = createClient()
     const newStatus = isApproved ? 'pending' : 'approved'
 
-    await supabase
-      .from('profiles')
-      .update({
-        payment_status: newStatus,
-        payment_validated_at: newStatus === 'approved' ? new Date().toISOString() : null,
-        payment_rejection_reason: null,
-      })
-      .eq('id', userId)
+    const res = await fetch('/api/admin/payment-toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, newStatus }),
+    })
+
+    if (res.ok) {
+      setStatus(newStatus)
+    }
 
     setLoading(false)
     router.refresh()
