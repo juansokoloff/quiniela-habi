@@ -1,11 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createAdminClient, getServerUser } from '@/lib/supabase/server'
-import MatchCard from '@/components/dashboard/MatchCard'
-import { Match, Prediction, MatchPhase } from '@/types'
-import { phaseLabel } from '@/lib/scoring'
+import PredictionsGrid from '@/components/dashboard/PredictionsGrid'
+import { Match, Prediction } from '@/types'
 import { getLeagueStats } from '@/lib/stats'
-
-const PHASE_ORDER: MatchPhase[] = ['group', 'round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'final']
 
 export default async function PredictionsPage() {
   const user = await getServerUser()
@@ -32,17 +29,6 @@ export default async function PredictionsPage() {
     supabase.from('predictions').select('*').eq('user_id', user.id),
     getLeagueStats(supabase, user.id),
   ])
-
-  const predMap = new Map<string, Prediction>()
-  predictions?.forEach(p => predMap.set(p.match_id, p))
-
-  // Group by phase
-  const grouped = new Map<MatchPhase, Match[]>()
-  matches?.forEach(m => {
-    const phase = m.phase as MatchPhase
-    if (!grouped.has(phase)) grouped.set(phase, [])
-    grouped.get(phase)!.push(m)
-  })
 
   const totalPoints = predictions?.reduce((sum, p) => sum + (p.points_earned || 0), 0) ?? 0
 
@@ -92,33 +78,11 @@ export default async function PredictionsPage() {
         )}
       </div>
 
-      {/* Matches by phase */}
-      {PHASE_ORDER.filter(phase => grouped.has(phase)).map(phase => (
-        <section key={phase}>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-            <span>{phaseLabel(phase)}</span>
-            <span className="text-sm font-normal text-gray-400">
-              ({grouped.get(phase)!.length} partidos)
-            </span>
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {grouped.get(phase)!.map(match => (
-              <MatchCard
-                key={match.id}
-                match={match}
-                prediction={predMap.get(match.id)}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      {!matches?.length && (
-        <div className="text-center py-16 text-gray-400">
-          <p className="text-lg">No hay partidos cargados aun.</p>
-          <p className="text-sm mt-1">Los partidos del Mundial se sincronizaran automaticamente.</p>
-        </div>
-      )}
+      {/* Matches grid with save all */}
+      <PredictionsGrid
+        matches={(matches ?? []) as Match[]}
+        predictions={(predictions ?? []) as Prediction[]}
+      />
     </div>
   )
 }

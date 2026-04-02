@@ -10,9 +10,11 @@ import { es } from 'date-fns/locale'
 interface MatchCardProps {
   match: Match
   prediction?: Prediction
+  onPredictionChange?: (matchId: string, home: number | '', away: number | '') => void
+  onSingleSaved?: (matchId: string) => void
 }
 
-export default function MatchCard({ match, prediction }: MatchCardProps) {
+export default function MatchCard({ match, prediction, onPredictionChange, onSingleSaved }: MatchCardProps) {
   const [home, setHome] = useState(prediction?.predicted_home ?? '')
   const [away, setAway] = useState(prediction?.predicted_away ?? '')
   const [saving, setSaving] = useState(false)
@@ -64,6 +66,7 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
       setError(data.error || 'Error al guardar')
     } else {
       setSaved(true)
+      onSingleSaved?.(match.id)
       setTimeout(() => setSaved(false), 2000)
     }
     setSaving(false)
@@ -137,8 +140,11 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
                 step="1"
                 value={home}
                 onChange={e => {
-                  setHome(e.target.value === '' ? '' : Number(e.target.value))
+                  const val = e.target.value === '' ? '' as const : Number(e.target.value)
+                  setHome(val)
                   setError(null)
+                  const otherVal = typeof away === 'number' ? away : '' as const
+                  onPredictionChange?.(match.id, val, otherVal)
                 }}
                 className="w-12 h-10 text-center border border-gray-300 rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
               />
@@ -150,8 +156,11 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
                 step="1"
                 value={away}
                 onChange={e => {
-                  setAway(e.target.value === '' ? '' : Number(e.target.value))
+                  const val = e.target.value === '' ? '' as const : Number(e.target.value)
+                  setAway(val)
                   setError(null)
+                  const otherVal = typeof home === 'number' ? home : '' as const
+                  onPredictionChange?.(match.id, otherVal, val)
                 }}
                 className="w-12 h-10 text-center border border-gray-300 rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
               />

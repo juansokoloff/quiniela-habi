@@ -37,7 +37,7 @@ export default async function AdminPaymentsPage() {
               <div className="flex items-center gap-3">
                 <StatusBadge status={receipt.status} />
                 <a
-                  href={receipt.receipt_url}
+                  href={`/api/admin/receipt?id=${receipt.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:underline"
