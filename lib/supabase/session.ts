@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
@@ -28,7 +29,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Public routes
-  const publicRoutes = ['/login', '/register', '/api/auth/callback']
+  const publicRoutes = ['/login', '/register', '/api/auth/callback', '/api/matches/sync']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
 
   if (!user && !isPublicRoute) {
@@ -57,9 +58,13 @@ export async function updateSession(request: NextRequest) {
       supabaseResponse.cookies.set(name, value)
     })
 
-    // Admin-only routes
+    // Admin-only routes — use service role client to bypass RLS
     if (pathname.startsWith('/admin')) {
-      const { data: profile } = await supabase
+      const adminClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+      const { data: profile } = await adminClient
         .from('profiles')
         .select('role')
         .eq('id', user.id)

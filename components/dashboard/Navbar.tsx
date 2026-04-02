@@ -21,9 +21,9 @@ export default function Navbar({ profile }: NavbarProps) {
   }
 
   const links = [
-    { href: '/', label: 'Inicio' },
     { href: '/predictions', label: 'Predicciones' },
     { href: '/standings', label: 'Posiciones' },
+    { href: '/rules', label: 'Reglas' },
   ]
 
   if (profile.role === 'admin') {
@@ -42,7 +42,7 @@ export default function Navbar({ profile }: NavbarProps) {
                   key={link.href}
                   href={link.href}
                   className={`text-sm font-medium px-2 py-1 rounded transition ${
-                    pathname === link.href
+                    pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href))
                       ? 'bg-white/20 text-white'
                       : 'text-green-100 hover:text-white'
                   }`}
