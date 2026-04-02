@@ -24,8 +24,9 @@ El comprobante es válido si cumple TODAS las siguientes condiciones:
    NO rechaces solo porque el nombre aparece en un orden diferente o abreviado.
 
 2. DATOS DE DESTINO SEGÚN EL PAÍS:
-   - COLOMBIA: El pago debe ser a Nequi, a la llave BreB con número [REDACTED-NEQUI]. Acepta si aparece el número [REDACTED-NEQUI] como destinatario o llave de pago.
-   - MÉXICO: El pago debe ser a la cuenta CLABE [REDACTED-CLABE]. Acepta si aparece este número CLABE como destino.
+   - COLOMBIA: El pago debe ser a Nequi, a la llave BreB con número [REDACTED-NEQUI]. Acepta si aparece el número completo o parcial (por ejemplo: "***8083650", "310***3650", "3108083***", "****83650", etc.). Muchos comprobantes ocultan parte del número por seguridad — esto es normal y válido. Lo importante es que los dígitos visibles coincidan con [REDACTED-NEQUI].
+   - MÉXICO: El pago debe ser a la cuenta CLABE [REDACTED-CLABE]. Acepta si aparece el número completo o parcial (por ejemplo: "0121800157****0970", "****04290970", "012180****", etc.). Los bancos frecuentemente enmascaran parte de la CLABE — esto es normal. Lo importante es que los dígitos visibles coincidan con [REDACTED-CLABE].
+   En ambos casos: NO rechaces por dígitos ocultos/enmascarados. Solo rechaza si los dígitos VISIBLES no coinciden con el número esperado.
 
 3. FORMATO Y AUTENTICIDAD DEL DOCUMENTO:
    - Debe ser un comprobante OFICIAL generado por una entidad bancaria o fintech (Nequi, Bancolombia, Davivienda, BBVA, Banorte, SPEI, etc.).
