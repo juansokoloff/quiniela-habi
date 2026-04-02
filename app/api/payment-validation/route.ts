@@ -101,7 +101,10 @@ export async function POST(request: NextRequest) {
     ],
   })
 
-  const analysisText = message.content[0].type === 'text' ? message.content[0].text : '{}'
+  let analysisText = message.content[0].type === 'text' ? message.content[0].text : '{}'
+
+  // Strip markdown code fences if present (e.g. ```json ... ```)
+  analysisText = analysisText.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
 
   let analysis: { approved: boolean; reason: string; details: string }
   try {
