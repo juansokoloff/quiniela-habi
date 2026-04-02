@@ -27,6 +27,7 @@ export default function Navbar({ profile }: NavbarProps) {
   const links = [
     { href: '/predictions', label: 'Predicciones' },
     { href: '/standings', label: 'Posiciones' },
+    { href: '/analytics', label: 'Analytics' },
     { href: '/rules', label: 'Reglas' },
   ]
 
