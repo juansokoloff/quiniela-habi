@@ -25,16 +25,17 @@ interface ExternalMatch {
   score: ExternalScore
 }
 
-function stageToPhase(stage: string): MatchPhase {
+function stageToPhase(stage: string): MatchPhase | null {
   const map: Record<string, MatchPhase> = {
     GROUP_STAGE: 'group',
+    LAST_32: 'round_of_32',
     LAST_16: 'round_of_16',
     QUARTER_FINALS: 'quarter_final',
     SEMI_FINALS: 'semi_final',
     FINAL: 'final',
-    THIRD_PLACE: 'semi_final',
+    THIRD_PLACE: 'final',
   }
-  return map[stage] || 'group'
+  return map[stage] || null
 }
 
 function statusToInternal(status: string): string {
@@ -65,14 +66,18 @@ export async function fetchWorldCupMatches(): Promise<ExternalMatch[]> {
 }
 
 export function transformMatch(m: ExternalMatch) {
+  const phase = stageToPhase(m.stage)
+  // Skip matches with unknown teams (elimination TBD) or unmapped stages
+  if (!m.homeTeam.name || !m.awayTeam.name || !phase) return null
+
   return {
     external_id: m.id,
     home_team: m.homeTeam.name,
     away_team: m.awayTeam.name,
-    home_team_flag: m.homeTeam.crest,
-    away_team_flag: m.awayTeam.crest,
+    home_team_flag: m.homeTeam.crest || '',
+    away_team_flag: m.awayTeam.crest || '',
     match_date: m.utcDate,
-    phase: stageToPhase(m.stage),
+    phase,
     status: statusToInternal(m.status),
     home_score: m.score.fullTime.home,
     away_score: m.score.fullTime.away,

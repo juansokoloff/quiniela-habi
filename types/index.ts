@@ -1,6 +1,6 @@
 export type UserRole = 'user' | 'admin'
 export type PaymentStatus = 'pending' | 'approved' | 'rejected'
-export type MatchPhase = 'group' | 'round_of_16' | 'quarter_final' | 'semi_final' | 'final'
+export type MatchPhase = 'group' | 'round_of_32' | 'round_of_16' | 'quarter_final' | 'semi_final' | 'final'
 export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'cancelled'
 
 export interface Profile {

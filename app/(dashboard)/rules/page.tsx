@@ -40,7 +40,7 @@ export default async function RulesPage() {
       <Section title="Sistema de puntos">
         <p className="text-gray-600 text-sm mb-4">
           Cada prediccion se evalua en 4 criterios. Los puntos base aplican en fase de grupos.
-          En fases eliminatorias (octavos, cuartos, semifinal y final) los puntos se <strong>duplican</strong>.
+          En fases eliminatorias (dieciseisavos, octavos, cuartos, semifinal y final) los puntos se <strong>duplican</strong>.
         </p>
 
         <div className="overflow-x-auto">

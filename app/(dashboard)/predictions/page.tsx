@@ -4,7 +4,7 @@ import MatchCard from '@/components/dashboard/MatchCard'
 import { Match, Prediction, MatchPhase } from '@/types'
 import { phaseLabel } from '@/lib/scoring'
 
-const PHASE_ORDER: MatchPhase[] = ['group', 'round_of_16', 'quarter_final', 'semi_final', 'final']
+const PHASE_ORDER: MatchPhase[] = ['group', 'round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'final']
 
 export default async function PredictionsPage() {
   const user = await getServerUser()

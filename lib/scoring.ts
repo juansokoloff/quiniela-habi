@@ -2,6 +2,7 @@ import { MatchPhase, ScoreBreakdown } from '@/types'
 
 const MULTIPLIER: Record<MatchPhase, number> = {
   group: 1,
+  round_of_32: 2,
   round_of_16: 2,
   quarter_final: 2,
   semi_final: 2,
@@ -44,6 +45,7 @@ export function isEditable(matchDate: string): boolean {
 export function phaseLabel(phase: MatchPhase): string {
   const labels: Record<MatchPhase, string> = {
     group: 'Fase de Grupos',
+    round_of_32: 'Dieciseisavos de Final',
     round_of_16: 'Octavos de Final',
     quarter_final: 'Cuartos de Final',
     semi_final: 'Semifinal',

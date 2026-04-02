@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Error fetching matches: ${msg}` }, { status: 500 })
   }
 
-  const transformed = matches.map(transformMatch)
+  const transformed = matches.map(transformMatch).filter((m): m is NonNullable<typeof m> => m !== null)
 
   // Upsert matches
   const { error: upsertError } = await supabase
