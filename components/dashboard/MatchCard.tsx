@@ -64,16 +64,29 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
       )
     : null
 
+  const hasPrediction = prediction?.predicted_home !== undefined && prediction?.predicted_home !== null
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+    <div className={`rounded-xl border shadow-sm p-4 ${
+      hasPrediction && !hasResult
+        ? 'bg-green-50/60 border-green-300'
+        : 'bg-white border-gray-200'
+    }`}>
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
           {phaseLabel(match.phase)}
           {match.group_name ? ` · ${match.group_name}` : ''}
         </span>
-        <span className="text-xs text-gray-400">
-          {format(new Date(match.match_date), "d MMM · HH:mm", { locale: es })}
-        </span>
+        <div className="flex items-center gap-2">
+          {hasPrediction && !hasResult && (
+            <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+              Guardado
+            </span>
+          )}
+          <span className="text-xs text-gray-400">
+            {format(new Date(match.match_date), "d MMM · HH:mm", { locale: es })}
+          </span>
+        </div>
       </div>
 
       {/* Teams */}
