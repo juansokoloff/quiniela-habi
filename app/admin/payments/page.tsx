@@ -4,12 +4,20 @@ import { es } from 'date-fns/locale'
 import PaymentActions from '@/components/admin/PaymentActions'
 
 export default async function AdminPaymentsPage() {
-  const supabase = await createAdminClient()
+  const supabase = createAdminClient()
 
-  const { data: receipts } = await supabase
+  // Fetch receipts and profiles separately to avoid join issues
+  const { data: receipts, error: receiptsError } = await supabase
     .from('payment_receipts')
-    .select('*, profile:profiles(full_name, email)')
+    .select('*')
     .order('created_at', { ascending: false })
+
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, full_name, email')
+
+  const profileMap = new Map<string, { full_name: string; email: string }>()
+  profiles?.forEach(p => profileMap.set(p.id, { full_name: p.full_name, email: p.email }))
 
   return (
     <div className="space-y-6">
@@ -24,10 +32,10 @@ export default async function AdminPaymentsPage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="font-semibold text-gray-900">
-                  {(receipt.profile as { full_name: string; email: string } | null)?.full_name}
+                  {profileMap.get(receipt.user_id)?.full_name ?? 'Usuario desconocido'}
                 </p>
                 <p className="text-sm text-gray-500">
-                  {(receipt.profile as { full_name: string; email: string } | null)?.email}
+                  {profileMap.get(receipt.user_id)?.email ?? ''}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
                   {format(new Date(receipt.created_at), "d MMM yyyy · HH:mm", { locale: es })}
