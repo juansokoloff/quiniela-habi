@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
+const ALLOWED_DOMAINS = ['habi.co', 'tuhabi.mx']
+
 export default function RegisterPage() {
   const router = useRouter()
   const [fullName, setFullName] = useState('')
@@ -13,17 +15,24 @@ export default function RegisterPage() {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showVerification, setShowVerification] = useState(false)
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
+    const domain = email.split('@')[1]?.toLowerCase()
+    if (!domain || !ALLOWED_DOMAINS.includes(domain)) {
+      setError('Solo se permiten correos corporativos @habi.co o @tuhabi.mx')
+      return
+    }
+
     if (password !== confirm) {
-      setError('Las contraseñas no coinciden')
+      setError('Las contrasenas no coinciden')
       return
     }
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+      setError('La contrasena debe tener al menos 6 caracteres')
       return
     }
 
@@ -41,8 +50,32 @@ export default function RegisterPage() {
       return
     }
 
-    router.push('/')
-    router.refresh()
+    setLoading(false)
+    setShowVerification(true)
+  }
+
+  if (showVerification) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-800 to-green-950 px-4">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
+          <div className="text-5xl mb-4">📧</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Revisa tu correo</h2>
+          <p className="text-gray-600 text-sm mb-4">
+            Enviamos un enlace de verificacion a <strong>{email}</strong>.
+            Haz clic en el enlace para activar tu cuenta.
+          </p>
+          <p className="text-gray-400 text-xs mb-6">
+            Si no lo encuentras, revisa tu carpeta de spam.
+          </p>
+          <Link
+            href="/login"
+            className="inline-block bg-green-700 hover:bg-green-800 text-white font-semibold py-2.5 px-6 rounded-lg transition"
+          >
+            Ir a iniciar sesion
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -65,13 +98,13 @@ export default function RegisterPage() {
               onChange={e => setFullName(e.target.value)}
               required
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-              placeholder="Beneficiary Name"
+              placeholder="Juan Perez"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Correo electrónico
+              Correo corporativo
             </label>
             <input
               type="email"
@@ -81,11 +114,12 @@ export default function RegisterPage() {
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
               placeholder="tu@habi.co"
             />
+            <p className="text-xs text-gray-400 mt-1">Solo correos @habi.co o @tuhabi.mx</p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña
+              Contrasena
             </label>
             <input
               type="password"
@@ -99,7 +133,7 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirmar contraseña
+              Confirmar contrasena
             </label>
             <input
               type="password"

@@ -27,8 +27,29 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
     return () => clearInterval(interval)
   }, [match.match_date])
 
+  const savedHome = prediction?.predicted_home ?? ''
+  const savedAway = prediction?.predicted_away ?? ''
+  const hasChanges = String(home) !== String(savedHome) || String(away) !== String(savedAway)
+
+  function validateGoals(value: string | number): string | null {
+    if (value === '') return null
+    const num = Number(value)
+    if (!Number.isInteger(num) || num < 0) {
+      return 'Solo se aceptan goles positivos y sin fracciones'
+    }
+    return null
+  }
+
   async function handleSave() {
     if (home === '' || away === '') return
+
+    const homeError = validateGoals(home)
+    const awayError = validateGoals(away)
+    if (homeError || awayError) {
+      setError(homeError || awayError)
+      return
+    }
+
     setSaving(true)
     setError(null)
 
@@ -78,7 +99,7 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
           {match.group_name ? ` · ${match.group_name}` : ''}
         </span>
         <div className="flex items-center gap-2">
-          {hasPrediction && !hasResult && (
+          {hasPrediction && !hasResult && !hasChanges && (
             <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
               Guardado
             </span>
@@ -103,8 +124,12 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
                 type="number"
                 min="0"
                 max="20"
+                step="1"
                 value={home}
-                onChange={e => setHome(e.target.value === '' ? '' : Number(e.target.value))}
+                onChange={e => {
+                  setHome(e.target.value === '' ? '' : Number(e.target.value))
+                  setError(null)
+                }}
                 className="w-12 h-10 text-center border border-gray-300 rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
               />
               <span className="text-gray-400 font-bold">-</span>
@@ -112,8 +137,12 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
                 type="number"
                 min="0"
                 max="20"
+                step="1"
                 value={away}
-                onChange={e => setAway(e.target.value === '' ? '' : Number(e.target.value))}
+                onChange={e => {
+                  setAway(e.target.value === '' ? '' : Number(e.target.value))
+                  setError(null)
+                }}
                 className="w-12 h-10 text-center border border-gray-300 rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
               />
             </>
@@ -124,7 +153,7 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
                   {prediction.predicted_home} - {prediction.predicted_away}
                 </span>
               ) : (
-                <span className="text-sm text-gray-400 italic">Sin predicción</span>
+                <span className="text-sm text-gray-400 italic">Sin prediccion</span>
               )}
               <Lock className="w-3.5 h-3.5 ml-1 text-gray-400" />
             </div>
@@ -154,8 +183,8 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
         </div>
       )}
 
-      {/* Save button */}
-      {editable && (
+      {/* Save button — only show when there are changes */}
+      {editable && (hasChanges || error || saved) && (
         <div className="mt-3 flex items-center gap-2">
           {error && <p className="text-xs text-red-500 flex-1">{error}</p>}
           {saved && (
@@ -164,13 +193,15 @@ export default function MatchCard({ match, prediction }: MatchCardProps) {
               <span className="text-xs font-medium">Guardado</span>
             </div>
           )}
-          <button
-            onClick={handleSave}
-            disabled={saving || home === '' || away === ''}
-            className="ml-auto text-sm bg-green-700 hover:bg-green-800 text-white px-4 py-1.5 rounded-lg transition disabled:opacity-50 font-medium"
-          >
-            {saving ? 'Guardando...' : prediction ? 'Actualizar' : 'Guardar'}
-          </button>
+          {hasChanges && (
+            <button
+              onClick={handleSave}
+              disabled={saving || home === '' || away === ''}
+              className="ml-auto text-sm bg-green-700 hover:bg-green-800 text-white px-4 py-1.5 rounded-lg transition disabled:opacity-50 font-medium"
+            >
+              {saving ? 'Guardando...' : prediction ? 'Actualizar' : 'Guardar'}
+            </button>
+          )}
         </div>
       )}
     </div>

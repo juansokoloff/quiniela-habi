@@ -166,7 +166,7 @@ export default function PaymentUpload({ userId }: PaymentUploadProps) {
         <div className="flex items-center gap-3 text-green-700 bg-green-50 rounded-lg px-4 py-3">
           <Loader2 className="w-5 h-5 animate-spin" />
           <span className="text-sm font-medium">
-            {state === 'uploading' ? 'Subiendo comprobante...' : 'Claude está verificando tu pago...'}
+            {state === 'uploading' ? 'Subiendo comprobante...' : 'Verificando tu comprobante...'}
           </span>
         </div>
       )}

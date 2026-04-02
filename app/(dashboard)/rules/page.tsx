@@ -12,10 +12,33 @@ export default async function RulesPage() {
         <p className="text-gray-500 text-sm mt-0.5">Quiniela Habi - Mundial 2026</p>
       </div>
 
+      {/* Premios */}
+      <Section title="Premios">
+        <p className="text-gray-600 text-sm mb-3">
+          El pozo total se calcula segun el numero de participantes inscritos:
+        </p>
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="bg-green-50 rounded-lg p-3 text-center">
+            <p className="text-xs text-gray-500">Colombia</p>
+            <p className="text-sm font-semibold text-gray-800">Participantes x $20,000 COP</p>
+          </div>
+          <div className="bg-green-50 rounded-lg p-3 text-center">
+            <p className="text-xs text-gray-500">Mexico</p>
+            <p className="text-sm font-semibold text-gray-800">Participantes x $100 MXN</p>
+          </div>
+        </div>
+        <p className="text-gray-600 text-sm mb-2">El pozo se distribuye de la siguiente forma:</p>
+        <div className="space-y-2">
+          <PrizeRow place="1er lugar" percent={70} color="yellow" />
+          <PrizeRow place="2do lugar" percent={20} color="gray" />
+          <PrizeRow place="3er lugar" percent={10} color="orange" />
+        </div>
+      </Section>
+
       {/* Inscripcion */}
-      <Section title="Inscripcion">
+      <Section title="Inscripcion y pago">
         <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-          <li>Para participar debes registrarte en la plataforma y subir un comprobante de pago.</li>
+          <li>Para participar debes registrarte con tu correo corporativo (<strong>@habi.co</strong> o <strong>@tuhabi.mx</strong>) y subir un comprobante de pago.</li>
           <li>
             <strong>Colombia:</strong> Nequi a la llave BreB <code className="bg-gray-100 px-1 rounded">[REDACTED-NEQUI]</code> por <strong>$20,000 COP</strong>.
           </li>
@@ -37,7 +60,7 @@ export default async function RulesPage() {
       </Section>
 
       {/* Sistema de puntos */}
-      <Section title="Sistema de puntos">
+      <Section title="Puntuacion">
         <p className="text-gray-600 text-sm mb-4">
           Cada prediccion se evalua en 4 criterios. Los puntos base aplican en fase de grupos.
           En fases eliminatorias (dieciseisavos, octavos, cuartos, semifinal y final) los puntos se <strong>duplican</strong>.
@@ -96,19 +119,19 @@ export default async function RulesPage() {
             prediction="Colombia 2 - 1 Brasil"
             result="Colombia 3 - 1 Brasil"
             points={7}
-            detail="Ganador + goles visitante + diferencia = 5+2+0"
+            detail="Ganador + goles visitante = 5+2"
           />
           <Example
             prediction="Colombia 2 - 1 Brasil"
             result="Colombia 1 - 0 Brasil"
             points={6}
-            detail="Ganador + diferencia de goles (ambas +1) = 5+0+0+1"
+            detail="Ganador + diferencia de goles (ambas +1) = 5+1"
           />
           <Example
             prediction="Colombia 2 - 1 Brasil"
             result="Colombia 2 - 0 Brasil"
             points={7}
-            detail="Ganador + goles local = 5+2+0+0"
+            detail="Ganador + goles local = 5+2"
           />
           <Example
             prediction="Colombia 2 - 1 Brasil"
@@ -120,7 +143,7 @@ export default async function RulesPage() {
             prediction="Colombia 1 - 1 Brasil"
             result="Colombia 2 - 2 Brasil"
             points={6}
-            detail="Empate correcto + diferencia (0) = 5+0+0+1"
+            detail="Empate correcto + diferencia (0) = 5+1"
           />
         </div>
       </Section>
@@ -139,7 +162,23 @@ export default async function RulesPage() {
         </ol>
       </Section>
 
-      {/* Premios */}
+      {/* Descalificacion */}
+      <Section title="Descalificacion">
+        <p className="text-gray-600 text-sm mb-2">
+          Un participante sera descalificado en los siguientes casos:
+        </p>
+        <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
+          <li>Subir un comprobante de pago falso o que no corresponda a una transaccion real.</li>
+          <li>Participar con un correo electronico que no pertenezca a la compania (<strong>@habi.co</strong> o <strong>@tuhabi.mx</strong>).</li>
+        </ul>
+        <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-blue-700 text-sm">
+            Si una persona sale de la compania antes de que finalice la quiniela, puede seguir accediendo al portal y participando normalmente, incluso si su correo corporativo ha sido deshabilitado.
+          </p>
+        </div>
+      </Section>
+
+      {/* Info general */}
       <Section title="Informacion general">
         <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
           <li>Los resultados de los partidos se actualizan automaticamente.</li>
@@ -157,6 +196,20 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-3">{title}</h2>
       {children}
+    </div>
+  )
+}
+
+function PrizeRow({ place, percent, color }: { place: string; percent: number; color: string }) {
+  const colors: Record<string, string> = {
+    yellow: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+    gray: 'bg-gray-100 text-gray-700 border-gray-300',
+    orange: 'bg-orange-100 text-orange-800 border-orange-300',
+  }
+  return (
+    <div className={`flex items-center justify-between border rounded-lg px-4 py-2.5 ${colors[color]}`}>
+      <span className="font-semibold text-sm">{place}</span>
+      <span className="font-bold text-lg">{percent}%</span>
     </div>
   )
 }
