@@ -4,39 +4,17 @@ import { fetchWorldCupMatches, transformMatch } from '@/lib/football-api/client'
 import { calculatePoints } from '@/lib/scoring'
 import { MatchPhase } from '@/types'
 
-// This endpoint can be called by a Vercel cron job or manually by the admin
-export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  const secret = process.env.CRON_SECRET || 'quiniela-habi-sync-2026'
+async function syncMatches() {
+  const supabase = createAdminClient()
 
-  if (authHeader !== `Bearer ${secret}`) {
-    const user = await getServerUser()
-    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    const supabase = await createAdminClient()
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  }
-
-  const supabase = await createAdminClient()
-
-  let matches
-  try {
-    matches = await fetchWorldCupMatches()
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Unknown error'
-    return NextResponse.json({ error: `Error fetching matches: ${msg}` }, { status: 500 })
-  }
-
+  const matches = await fetchWorldCupMatches()
   const transformed = matches.map(transformMatch).filter((m): m is NonNullable<typeof m> => m !== null)
 
-  // Upsert matches
   const { error: upsertError } = await supabase
     .from('matches')
     .upsert(transformed, { onConflict: 'external_id' })
 
-  if (upsertError) {
-    return NextResponse.json({ error: upsertError.message }, { status: 500 })
-  }
+  if (upsertError) throw new Error(upsertError.message)
 
   // Update points for finished matches
   const finished = transformed.filter(
@@ -78,13 +56,45 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({
-    ok: true,
-    matchesSynced: transformed.length,
-    pointsUpdated,
-  })
+  return { matchesSynced: transformed.length, pointsUpdated }
 }
 
-export async function GET() {
-  return NextResponse.json({ message: 'Use POST to sync matches' })
+// POST: called manually by admin
+export async function POST(request: NextRequest) {
+  const authHeader = request.headers.get('authorization')
+  const secret = process.env.CRON_SECRET || 'quiniela-habi-sync-2026'
+
+  if (authHeader !== `Bearer ${secret}`) {
+    const user = await getServerUser()
+    if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    const supabase = createAdminClient()
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (profile?.role !== 'admin') return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
+  try {
+    const result = await syncMatches()
+    return NextResponse.json({ ok: true, ...result })
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Unknown error'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}
+
+// GET: called by Vercel cron
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get('authorization')
+  const secret = process.env.CRON_SECRET || 'quiniela-habi-sync-2026'
+
+  if (authHeader !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
+  try {
+    const result = await syncMatches()
+    return NextResponse.json({ ok: true, ...result })
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Unknown error'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
 }
