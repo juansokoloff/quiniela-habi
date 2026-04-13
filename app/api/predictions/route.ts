@@ -32,6 +32,10 @@ export async function POST(request: NextRequest) {
 
   if (!match) return NextResponse.json({ error: 'Partido no encontrado' }, { status: 404 })
 
+  if (match.status !== 'scheduled') {
+    return NextResponse.json({ error: 'El partido ya no permite predicciones' }, { status: 400 })
+  }
+
   const cutoff = new Date(match.match_date).getTime() - 10 * 60 * 1000
   if (Date.now() >= cutoff) {
     return NextResponse.json({ error: 'El tiempo para predecir este partido ha terminado' }, { status: 400 })
