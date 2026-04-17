@@ -57,10 +57,36 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   const supabase = createAdminClient()
 
-  const { receiptUrl, receiptId, filePath } = await request.json()
+  // Check if already approved — no need to call Claude again
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('payment_status')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.payment_status === 'approved') {
+    return NextResponse.json({ error: 'Pago ya aprobado' }, { status: 400 })
+  }
+
+  const { receiptId, filePath } = await request.json()
 
   if (!receiptId || !filePath) {
     return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 })
+  }
+
+  // Verify receipt belongs to the calling user
+  const { data: receipt } = await supabase
+    .from('payment_receipts')
+    .select('user_id, status')
+    .eq('id', receiptId)
+    .single()
+
+  if (!receipt || receipt.user_id !== user.id) {
+    return NextResponse.json({ error: 'Comprobante no encontrado' }, { status: 404 })
+  }
+
+  if (receipt.status !== 'pending') {
+    return NextResponse.json({ error: 'Este comprobante ya fue procesado' }, { status: 400 })
   }
 
   // Fetch the file from Supabase storage

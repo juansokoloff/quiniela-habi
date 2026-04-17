@@ -12,6 +12,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Datos incompletos' }, { status: 400 })
   }
 
+  if (!Number.isInteger(predictedHome) || predictedHome < 0 ||
+      !Number.isInteger(predictedAway) || predictedAway < 0) {
+    return NextResponse.json({ error: 'Solo se aceptan goles positivos y sin fracciones' }, { status: 400 })
+  }
+
   // Verify user has approved payment
   const { data: profile } = await supabase
     .from('profiles')

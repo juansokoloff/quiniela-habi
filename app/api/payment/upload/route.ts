@@ -14,6 +14,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No se proporcionó archivo' }, { status: 400 })
   }
 
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+  if (!allowedTypes.includes(file.type)) {
+    return NextResponse.json({ error: 'Tipo de archivo no permitido. Solo se aceptan imágenes (JPG, PNG, WEBP) o PDF.' }, { status: 400 })
+  }
+
   const supabase = createAdminClient()
   const fileName = `${Date.now()}-${file.name}`
   const filePath = `${user.id}/${fileName}`

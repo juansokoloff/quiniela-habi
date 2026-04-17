@@ -74,7 +74,7 @@ export default async function AdminDashboard() {
 
 function SyncButton() {
   return (
-    <form action="/api/matches/sync-action" method="POST">
+    <form action="/api/matches/sync" method="POST">
       <button
         type="submit"
         className="px-4 py-2 bg-green-700 hover:bg-green-800 text-white text-sm font-medium rounded-lg transition"

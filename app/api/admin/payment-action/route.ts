@@ -20,6 +20,17 @@ export async function POST(request: NextRequest) {
 
   const { action, receiptId, userId, reason } = await request.json()
 
+  // Verify receipt belongs to the stated userId
+  const { data: receipt } = await supabase
+    .from('payment_receipts')
+    .select('user_id')
+    .eq('id', receiptId)
+    .single()
+
+  if (!receipt || receipt.user_id !== userId) {
+    return NextResponse.json({ error: 'El comprobante no corresponde a ese usuario' }, { status: 400 })
+  }
+
   if (action === 'approve') {
     const [r1, r2] = await Promise.all([
       supabase

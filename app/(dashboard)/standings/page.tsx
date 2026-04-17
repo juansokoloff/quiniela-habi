@@ -6,7 +6,15 @@ import { es } from 'date-fns/locale'
 export default async function StandingsPage() {
   const user = await getServerUser()
   if (!user) redirect('/login')
-  const supabase = await createAdminClient()
+  const supabase = createAdminClient()
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('payment_status')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.payment_status !== 'approved') redirect('/payment')
 
   const { data: standings } = await supabase
     .from('standings')
