@@ -4,23 +4,31 @@ import { es } from 'date-fns/locale'
 import { phaseLabel } from '@/lib/scoring'
 import { MatchPhase } from '@/types'
 import SyncMatchesButton from '@/components/admin/SyncMatchesButton'
+import SyncPolymarketButton from '@/components/admin/SyncPolymarketButton'
 
 export default async function AdminMatchesPage() {
-  const supabase = await createAdminClient()
+  const supabase = createAdminClient()
 
   const { data: matches } = await supabase
     .from('matches')
     .select('*')
     .order('match_date', { ascending: true })
 
+  const withOdds = matches?.filter(m => m.polymarket_slug).length ?? 0
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Partidos</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{matches?.length ?? 0} partidos</p>
+          <p className="text-gray-500 text-sm mt-0.5">
+            {matches?.length ?? 0} partidos · {withOdds} con odds de Polymarket
+          </p>
         </div>
-        <SyncMatchesButton />
+        <div className="flex gap-2 flex-wrap">
+          <SyncPolymarketButton />
+          <SyncMatchesButton />
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -33,6 +41,7 @@ export default async function AdminMatchesPage() {
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3">Estado</th>
                 <th className="px-4 py-3">Resultado</th>
+                <th className="px-4 py-3">Polymarket</th>
               </tr>
             </thead>
             <tbody>
@@ -54,11 +63,29 @@ export default async function AdminMatchesPage() {
                   <td className="px-4 py-3 text-gray-700 font-mono">
                     {m.home_score !== null ? `${m.home_score} - ${m.away_score}` : '-'}
                   </td>
+                  <td className="px-4 py-3 text-xs">
+                    {m.polymarket_slug ? (
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1 text-gray-700 font-medium">
+                          <span className="text-blue-600">{pct(m.polymarket_home_prob)}</span>
+                          <span className="text-gray-400">·</span>
+                          <span className="text-gray-500">{pct(m.polymarket_draw_prob)}</span>
+                          <span className="text-gray-400">·</span>
+                          <span className="text-red-600">{pct(m.polymarket_away_prob)}</span>
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-mono truncate max-w-[180px]" title={m.polymarket_slug}>
+                          {m.polymarket_slug}
+                        </p>
+                      </div>
+                    ) : (
+                      <span className="text-gray-300 italic">sin odds</span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {!matches?.length && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={6} className="px-4 py-12 text-center text-gray-400">
                     No hay partidos. Usa el botón "Sincronizar" para cargar los partidos del Mundial.
                   </td>
                 </tr>
@@ -69,6 +96,11 @@ export default async function AdminMatchesPage() {
       </div>
     </div>
   )
+}
+
+function pct(v: number | null | undefined): string {
+  if (v === null || v === undefined) return '-'
+  return `${Math.round(Number(v) * 100)}%`
 }
 
 function StatusBadge({ status }: { status: string }) {

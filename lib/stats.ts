@@ -56,6 +56,11 @@ export interface MatchAnalytics {
   pctDraw: number
   pctAwayWin: number
   avgTotalGoals: number
+  // Polymarket odds (null if no market data)
+  marketHomeProb: number | null
+  marketAwayProb: number | null
+  marketDrawProb: number | null
+  marketSlug: string | null
 }
 
 export async function getLeagueStats(
@@ -248,6 +253,10 @@ export async function getMatchAnalytics(
       pctDraw,
       pctAwayWin,
       avgTotalGoals,
+      marketHomeProb: m.polymarket_home_prob !== null && m.polymarket_home_prob !== undefined ? Number(m.polymarket_home_prob) : null,
+      marketAwayProb: m.polymarket_away_prob !== null && m.polymarket_away_prob !== undefined ? Number(m.polymarket_away_prob) : null,
+      marketDrawProb: m.polymarket_draw_prob !== null && m.polymarket_draw_prob !== undefined ? Number(m.polymarket_draw_prob) : null,
+      marketSlug: m.polymarket_slug ?? null,
     }
   })
 }

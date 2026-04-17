@@ -183,8 +183,62 @@ function MatchAnalyticsCard({ match }: { match: Awaited<ReturnType<typeof getMat
             <span className="text-gray-500">Prom. goles estimados</span>
             <span className="font-bold text-gray-700">{match.avgTotalGoals.toFixed(1)}</span>
           </div>
+
+          {/* Polymarket favorite */}
+          {match.marketSlug && (match.marketHomeProb !== null || match.marketAwayProb !== null || match.marketDrawProb !== null) && (
+            <div className="pt-2 border-t border-gray-100">
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-gray-500 flex items-center gap-1">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17l6-6 4 4 8-8v4h2V4h-7v2h4l-7 7-4-4-7 7z"/></svg>
+                  Mercado
+                </span>
+                <MarketFavorite match={match} />
+              </div>
+              <div className="flex gap-1 h-4 rounded-md overflow-hidden bg-gray-100">
+                {(match.marketHomeProb ?? 0) > 0 && (
+                  <div className="bg-blue-400" style={{ width: `${(match.marketHomeProb ?? 0) * 100}%` }} title={`${match.homeTeam}: ${pctMarket(match.marketHomeProb)}`} />
+                )}
+                {(match.marketDrawProb ?? 0) > 0 && (
+                  <div className="bg-gray-400" style={{ width: `${(match.marketDrawProb ?? 0) * 100}%` }} title={`Empate: ${pctMarket(match.marketDrawProb)}`} />
+                )}
+                {(match.marketAwayProb ?? 0) > 0 && (
+                  <div className="bg-red-400" style={{ width: `${(match.marketAwayProb ?? 0) * 100}%` }} title={`${match.awayTeam}: ${pctMarket(match.marketAwayProb)}`} />
+                )}
+              </div>
+              <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                <span>{pctMarket(match.marketHomeProb)}</span>
+                <span>{pctMarket(match.marketDrawProb)}</span>
+                <span>{pctMarket(match.marketAwayProb)}</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
+  )
+}
+
+function pctMarket(v: number | null): string {
+  if (v === null) return '-'
+  return `${Math.round(v * 100)}%`
+}
+
+function MarketFavorite({ match }: { match: Awaited<ReturnType<typeof getMatchAnalytics>>[number] }) {
+  const home = match.marketHomeProb ?? 0
+  const draw = match.marketDrawProb ?? 0
+  const away = match.marketAwayProb ?? 0
+  const max = Math.max(home, draw, away)
+  if (max === 0) return <span className="text-gray-400">sin datos</span>
+
+  let label = ''
+  let color = 'text-gray-600'
+  if (max === home) { label = match.homeTeam; color = 'text-blue-600' }
+  else if (max === away) { label = match.awayTeam; color = 'text-red-600' }
+  else { label = 'Empate'; color = 'text-gray-600' }
+
+  return (
+    <span className={`font-semibold ${color}`}>
+      {label} {Math.round(max * 100)}%
+    </span>
   )
 }
