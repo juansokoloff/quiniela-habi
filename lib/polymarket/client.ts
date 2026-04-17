@@ -58,22 +58,33 @@ const TEAM_CODE_MAP: Record<string, string[]> = {
   Colombia: ['col'],
 }
 
+function shiftDate(isoDate: string, deltaDays: number): string {
+  const d = new Date(`${isoDate}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + deltaDays)
+  return d.toISOString().substring(0, 10)
+}
+
 export function candidateSlugs(homeTeam: string, awayTeam: string, matchDate: string): string[] {
-  const date = matchDate.substring(0, 10) // YYYY-MM-DD
+  const baseDate = matchDate.substring(0, 10) // YYYY-MM-DD
   const homeCodes = TEAM_CODE_MAP[homeTeam] ?? []
   const awayCodes = TEAM_CODE_MAP[awayTeam] ?? []
 
+  // Polymarket stores events in local time so dates can drift ±1 day from UTC
+  const dates = [baseDate, shiftDate(baseDate, -1), shiftDate(baseDate, 1)]
+
   const slugs: string[] = []
-  // Try home-away order first
-  for (const h of homeCodes) {
-    for (const a of awayCodes) {
-      slugs.push(`fifwc-${h}-${a}-${date}`)
-    }
-  }
-  // Fallback to away-home order (Polymarket sometimes reverses)
-  for (const a of awayCodes) {
+  for (const date of dates) {
+    // Try home-away order first
     for (const h of homeCodes) {
-      slugs.push(`fifwc-${a}-${h}-${date}`)
+      for (const a of awayCodes) {
+        slugs.push(`fifwc-${h}-${a}-${date}`)
+      }
+    }
+    // Fallback to away-home order (Polymarket sometimes reverses)
+    for (const a of awayCodes) {
+      for (const h of homeCodes) {
+        slugs.push(`fifwc-${a}-${h}-${date}`)
+      }
     }
   }
   return slugs

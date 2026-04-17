@@ -135,7 +135,10 @@ function MatchAnalyticsCard({ match }: { match: Awaited<ReturnType<typeof getMat
 
           {/* Winner distribution */}
           <div>
-            <p className="text-xs text-gray-500 mb-1">Distribucion de predicciones</p>
+            <div className="flex items-center justify-between text-xs mb-1">
+              <p className="text-gray-500">Distribucion de predicciones</p>
+              <span className="text-[10px] text-gray-400 italic">jugadores</span>
+            </div>
             <div className="flex gap-1 h-5 rounded-lg overflow-hidden">
               {match.pctHomeWin > 0 && (
                 <div
@@ -190,8 +193,11 @@ function MatchAnalyticsCard({ match }: { match: Awaited<ReturnType<typeof getMat
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="text-gray-500 flex items-center gap-1">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17l6-6 4 4 8-8v4h2V4h-7v2h4l-7 7-4-4-7 7z"/></svg>
-                  Mercado
+                  Probabilidad de mercado
                 </span>
+                <span className="text-[10px] text-gray-400 italic">Polymarket</span>
+              </div>
+              <div className="flex items-center justify-end text-xs mb-1">
                 <MarketFavorite match={match} />
               </div>
               <div className="flex gap-1 h-4 rounded-md overflow-hidden bg-gray-100">
