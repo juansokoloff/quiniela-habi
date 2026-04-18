@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [termsAccepted, setTermsAccepted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showVerification, setShowVerification] = useState(false)
@@ -35,13 +36,24 @@ export default function RegisterPage() {
       setError('La contrasena debe tener al menos 6 caracteres')
       return
     }
+    if (!termsAccepted) {
+      setError('Debes aceptar los terminos y condiciones para crear tu cuenta')
+      return
+    }
 
     setLoading(true)
     const supabase = createClient()
+    const acceptedAt = new Date().toISOString()
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: {
+        data: {
+          full_name: fullName,
+          terms_accepted_at: acceptedAt,
+          terms_version: '2026-04-18',
+        },
+      },
     })
 
     if (error) {
@@ -154,14 +166,34 @@ export default function RegisterPage() {
             />
           </div>
 
+          <label className="flex items-start gap-2.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={e => setTermsAccepted(e.target.checked)}
+              className="mt-0.5 w-4 h-4 text-green-700 border-gray-300 rounded focus:ring-green-500 accent-green-700 shrink-0"
+            />
+            <span className="text-xs text-gray-600 leading-relaxed">
+              He leído y acepto los{' '}
+              <Link
+                href="/terms"
+                target="_blank"
+                className="text-green-700 hover:underline font-medium"
+              >
+                términos y condiciones
+              </Link>
+              {' '}de Quiniela Habi.
+            </span>
+          </label>
+
           {error && (
             <p className="text-red-600 text-sm bg-red-50 px-4 py-2 rounded-lg">{error}</p>
           )}
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60"
+            disabled={loading || !termsAccepted}
+            className="w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? 'Creando cuenta...' : 'Crear cuenta'}
           </button>
@@ -174,11 +206,17 @@ export default function RegisterPage() {
           </Link>
         </p>
 
-        <p className="text-center text-xs text-gray-400 mt-4">
-          Powered by{' '}
-          <a href="https://everyweekfantasy.com" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
-            everyweekfantasy.com
-          </a>
+        <p className="text-center text-xs text-gray-400 mt-4 space-x-2">
+          <Link href="/terms" className="hover:text-gray-600 hover:underline">
+            Términos y condiciones
+          </Link>
+          <span>·</span>
+          <span>
+            Powered by{' '}
+            <a href="https://everyweekfantasy.com" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
+              everyweekfantasy.com
+            </a>
+          </span>
         </p>
       </div>
     </div>

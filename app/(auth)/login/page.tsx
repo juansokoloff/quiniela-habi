@@ -102,11 +102,17 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        <p className="text-center text-xs text-gray-400 mt-4">
-          Powered by{' '}
-          <a href="https://everyweekfantasy.com" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
-            everyweekfantasy.com
-          </a>
+        <p className="text-center text-xs text-gray-400 mt-4 space-x-2">
+          <Link href="/terms" className="hover:text-gray-600 hover:underline">
+            Términos y condiciones
+          </Link>
+          <span>·</span>
+          <span>
+            Powered by{' '}
+            <a href="https://everyweekfantasy.com" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
+              everyweekfantasy.com
+            </a>
+          </span>
         </p>
       </div>
     </div>
