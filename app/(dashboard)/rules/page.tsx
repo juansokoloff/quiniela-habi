@@ -56,6 +56,10 @@ export default async function RulesPage() {
           <li>Debes ingresar el marcador exacto que crees que tendra el partido (goles local y visitante).</li>
           <li>Puedes modificar tu prediccion hasta <strong>10 minutos antes</strong> del inicio del partido.</li>
           <li>Si no registras prediccion para un partido, obtendras <strong>0 puntos</strong> en ese partido.</li>
+          <li>
+            En fases eliminatorias el marcador valido es el del <strong>minuto 120</strong> (incluye tiempo extra, <strong>no incluye penales</strong>).
+            Si un partido termina empatado tras el tiempo extra y se define por penales, para efectos de la quiniela cuenta como empate.
+          </li>
         </ul>
       </Section>
 
