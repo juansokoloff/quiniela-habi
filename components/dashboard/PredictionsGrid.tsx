@@ -1,8 +1,16 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import MatchCard from './MatchCard'
+import MatchFilterBar, {
+  DEFAULT_FILTERS,
+  MatchFilters,
+  filterMatches,
+  derivePhaseOptions,
+  deriveGroupOptions,
+  deriveTeamOptions,
+} from './MatchFilterBar'
 import { Match, Prediction, MatchPhase } from '@/types'
 import { phaseLabel } from '@/lib/scoring'
 import { Save, Loader2, CheckCircle } from 'lucide-react'
@@ -25,13 +33,22 @@ export default function PredictionsGrid({ matches, predictions }: PredictionsGri
   const [pendingChanges, setPendingChanges] = useState<Map<string, PendingChange>>(new Map())
   const [saving, setSaving] = useState(false)
   const [saveResult, setSaveResult] = useState<string | null>(null)
+  const [filters, setFilters] = useState<MatchFilters>(DEFAULT_FILTERS)
 
   const predMap = new Map<string, Prediction>()
   predictions.forEach(p => predMap.set(p.match_id, p))
 
+  const filterOptions = useMemo(() => ({
+    phases: derivePhaseOptions(matches),
+    groups: deriveGroupOptions(matches),
+    teams: deriveTeamOptions(matches),
+  }), [matches])
+
+  const filteredMatches = useMemo(() => filterMatches(matches, filters), [matches, filters])
+
   // Group by phase
   const grouped = new Map<MatchPhase, Match[]>()
-  matches.forEach(m => {
+  filteredMatches.forEach(m => {
     const phase = m.phase as MatchPhase
     if (!grouped.has(phase)) grouped.set(phase, [])
     grouped.get(phase)!.push(m)
@@ -90,6 +107,22 @@ export default function PredictionsGrid({ matches, predictions }: PredictionsGri
 
   return (
     <>
+      {matches.length > 0 && (
+        <MatchFilterBar
+          filters={filters}
+          onChange={setFilters}
+          availablePhases={filterOptions.phases}
+          availableGroups={filterOptions.groups}
+          availableTeams={filterOptions.teams}
+          resultCount={filteredMatches.length}
+          totalCount={matches.length}
+        />
+      )}
+      {filteredMatches.length === 0 && matches.length > 0 && (
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-sm">No hay partidos que coincidan con los filtros.</p>
+        </div>
+      )}
       {PHASE_ORDER.filter(phase => grouped.has(phase)).map(phase => (
         <section key={phase}>
           <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">

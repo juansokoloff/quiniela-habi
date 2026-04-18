@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Match, Prediction } from '@/types'
 import { isEditable, phaseLabel, calculatePoints } from '@/lib/scoring'
+import { teamFlag } from '@/lib/flags'
 import { Lock, CheckCircle, Trophy } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -128,7 +129,10 @@ export default function MatchCard({ match, prediction, onPredictionChange, onSin
       {/* Teams and prediction */}
       <div className="flex items-center gap-3 justify-between">
         <div className="flex-1 text-right">
-          <p className="font-semibold text-gray-900 text-sm">{match.home_team}</p>
+          <p className="font-semibold text-gray-900 text-sm flex items-center justify-end gap-1.5">
+            <span>{match.home_team}</span>
+            <span className="text-lg leading-none" aria-hidden>{teamFlag(match.home_team)}</span>
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {editable ? (
@@ -179,7 +183,10 @@ export default function MatchCard({ match, prediction, onPredictionChange, onSin
           )}
         </div>
         <div className="flex-1 text-left">
-          <p className="font-semibold text-gray-900 text-sm">{match.away_team}</p>
+          <p className="font-semibold text-gray-900 text-sm flex items-center gap-1.5">
+            <span className="text-lg leading-none" aria-hidden>{teamFlag(match.away_team)}</span>
+            <span>{match.away_team}</span>
+          </p>
         </div>
       </div>
 
