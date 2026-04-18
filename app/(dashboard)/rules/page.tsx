@@ -175,9 +175,12 @@ export default async function RulesPage() {
           <li>Subir un comprobante de pago falso o que no corresponda a una transaccion real.</li>
           <li>Participar con un correo electronico que no pertenezca a la compania (<strong>@habi.co</strong> o <strong>@tuhabi.mx</strong>).</li>
         </ul>
-        <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
           <p className="text-blue-700 text-sm">
             Si una persona sale de la compania antes de que finalice la quiniela, puede seguir accediendo al portal y participando normalmente, incluso si su correo corporativo ha sido deshabilitado.
+          </p>
+          <p className="text-blue-700 text-sm">
+            <strong>Importante:</strong> si durante el torneo dejas de tener acceso a tu correo corporativo (@habi.co o @tuhabi.mx), <strong>no podras restablecer tu contrasena</strong>, dado que el enlace de recuperacion se envia unicamente a ese correo. Te recomendamos asegurarte de recordar tu contrasena o cambiarla a una segura antes de perder acceso al correo.
           </p>
         </div>
       </Section>
