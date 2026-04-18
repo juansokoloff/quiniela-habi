@@ -1,4 +1,6 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { BookOpen } from 'lucide-react'
 import { createAdminClient, getServerUser } from '@/lib/supabase/server'
 import PaymentUpload from '@/components/dashboard/PaymentUpload'
 
@@ -23,6 +25,13 @@ export default async function PaymentPage() {
         <p className="text-gray-500 mt-1 text-sm">
           Sube tu comprobante de pago para participar en la quiniela.
         </p>
+        <Link
+          href="/rules"
+          className="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-green-700 hover:text-green-800 hover:underline"
+        >
+          <BookOpen className="w-4 h-4" />
+          Ver reglas antes de pagar
+        </Link>
       </div>
 
       <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4 text-sm text-gray-600 space-y-1">

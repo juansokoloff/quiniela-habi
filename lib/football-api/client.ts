@@ -10,7 +10,11 @@ interface ExternalTeam {
 }
 
 interface ExternalScore {
+  winner?: string | null
+  duration?: string | null
   fullTime: { home: number | null; away: number | null }
+  extraTime?: { home: number | null; away: number | null }
+  penalties?: { home: number | null; away: number | null }
 }
 
 interface ExternalMatch {
@@ -70,6 +74,24 @@ export function transformMatch(m: ExternalMatch) {
   // Skip matches with unknown teams (elimination TBD) or unmapped stages
   if (!m.homeTeam.name || !m.awayTeam.name || !phase) return null
 
+  // Knockout scoring: our quiniela scores on the 120-min result (regulation +
+  // extra time, but NOT penalties). football-data.org v4's `fullTime` is
+  // historically the final score at the end of the match before any penalty
+  // shootout, so it already reflects 120 min when ET was played. We log a
+  // warning when a knockout match resolves via ET/penalties so we can spot
+  // any provider inconsistency during the tournament and fix it fast.
+  const { home: homeScore, away: awayScore } = m.score.fullTime
+  if (
+    phase !== 'group' &&
+    m.status === 'FINISHED' &&
+    (m.score.duration === 'EXTRA_TIME' || m.score.duration === 'PENALTY_SHOOTOUT')
+  ) {
+    console.info(
+      `[sync] knockout ${m.homeTeam.name} vs ${m.awayTeam.name} finished ${m.score.duration}. ` +
+        `fullTime=${homeScore}-${awayScore} extraTime=${m.score.extraTime?.home ?? 'null'}-${m.score.extraTime?.away ?? 'null'} penalties=${m.score.penalties?.home ?? 'null'}-${m.score.penalties?.away ?? 'null'}`
+    )
+  }
+
   return {
     external_id: m.id,
     home_team: m.homeTeam.name,
@@ -79,8 +101,8 @@ export function transformMatch(m: ExternalMatch) {
     match_date: m.utcDate,
     phase,
     status: statusToInternal(m.status),
-    home_score: m.score.fullTime.home,
-    away_score: m.score.fullTime.away,
+    home_score: homeScore,
+    away_score: awayScore,
     matchday: m.matchday,
     group_name: m.group,
   }

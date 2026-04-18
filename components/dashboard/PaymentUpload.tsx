@@ -16,11 +16,11 @@ export default function PaymentUpload({ userId }: PaymentUploadProps) {
   const [state, setState] = useState<UploadState>('idle')
   const [preview, setPreview] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
   const [result, setResult] = useState<{ reason: string; details: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = e.target.files?.[0]
+  function acceptFile(selected: File | undefined | null) {
     if (!selected) return
 
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf']
@@ -40,6 +40,31 @@ export default function PaymentUpload({ userId }: PaymentUploadProps) {
     } else {
       setPreview(null)
     }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    acceptFile(e.target.files?.[0])
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    if (isProcessing) return
+    acceptFile(e.dataTransfer.files?.[0])
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (isProcessing) return
+    setIsDragging(true)
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
   }
 
   async function handleSubmit() {
@@ -132,8 +157,16 @@ export default function PaymentUpload({ userId }: PaymentUploadProps) {
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
       <div
         onClick={() => !isProcessing && inputRef.current?.click()}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
         className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
-          file ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-green-400 hover:bg-green-50/30'
+          isDragging
+            ? 'border-green-500 bg-green-100'
+            : file
+              ? 'border-green-400 bg-green-50'
+              : 'border-gray-300 hover:border-green-400 hover:bg-green-50/30'
         } ${isProcessing ? 'cursor-not-allowed opacity-60' : ''}`}
       >
         <input
@@ -151,7 +184,11 @@ export default function PaymentUpload({ userId }: PaymentUploadProps) {
           <>
             <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600 font-medium text-sm">
-              {file ? file.name : 'Haz clic para subir tu comprobante'}
+              {file
+                ? file.name
+                : isDragging
+                  ? 'Suelta el archivo aquí'
+                  : 'Haz clic o arrastra tu comprobante aquí'}
             </p>
             <p className="text-gray-400 text-xs mt-1">JPG, PNG, WEBP o PDF · Máx. 10MB</p>
           </>
