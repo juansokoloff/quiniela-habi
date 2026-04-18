@@ -65,18 +65,23 @@ export default async function AdminMatchesPage() {
                   </td>
                   <td className="px-4 py-3 text-xs">
                     {m.polymarket_slug ? (
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-1 text-gray-700 font-medium">
-                          <span className="text-blue-600">{pct(m.polymarket_home_prob)}</span>
-                          <span className="text-gray-400">·</span>
-                          <span className="text-gray-500">{pct(m.polymarket_draw_prob)}</span>
-                          <span className="text-gray-400">·</span>
-                          <span className="text-red-600">{pct(m.polymarket_away_prob)}</span>
-                        </div>
-                        <p className="text-[10px] text-gray-400 font-mono truncate max-w-[180px]" title={m.polymarket_slug}>
-                          {m.polymarket_slug}
-                        </p>
-                      </div>
+                      (() => {
+                        const n = normalize(m.polymarket_home_prob, m.polymarket_draw_prob, m.polymarket_away_prob)
+                        return (
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-1 text-gray-700 font-medium">
+                              <span className="text-blue-600">{pct(n.home)}</span>
+                              <span className="text-gray-400">·</span>
+                              <span className="text-gray-500">{pct(n.draw)}</span>
+                              <span className="text-gray-400">·</span>
+                              <span className="text-red-600">{pct(n.away)}</span>
+                            </div>
+                            <p className="text-[10px] text-gray-400 font-mono truncate max-w-[180px]" title={m.polymarket_slug}>
+                              {m.polymarket_slug}
+                            </p>
+                          </div>
+                        )
+                      })()
                     ) : (
                       <span className="text-gray-300 italic">sin odds</span>
                     )}
@@ -101,6 +106,21 @@ export default async function AdminMatchesPage() {
 function pct(v: number | null | undefined): string {
   if (v === null || v === undefined) return '-'
   return `${Math.round(Number(v) * 100)}%`
+}
+
+// Polymarket exposes each outcome as a separate binary Yes/No market, so the
+// raw "Yes" prices can sum to 105-135%. Normalize to 100% for display.
+function normalize(
+  home: number | null | undefined,
+  draw: number | null | undefined,
+  away: number | null | undefined
+): { home: number; draw: number; away: number } {
+  const h = Number(home ?? 0)
+  const d = Number(draw ?? 0)
+  const a = Number(away ?? 0)
+  const sum = h + d + a
+  if (sum === 0) return { home: 0, draw: 0, away: 0 }
+  return { home: h / sum, draw: d / sum, away: a / sum }
 }
 
 function StatusBadge({ status }: { status: string }) {

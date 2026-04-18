@@ -168,51 +168,73 @@ function MatchAnalyticsCard({ match }: { match: MatchAnalytics }) {
             <span className="font-bold text-gray-700">{match.avgTotalGoals.toFixed(1)}</span>
           </div>
 
-          {match.marketSlug && (match.marketHomeProb !== null || match.marketAwayProb !== null || match.marketDrawProb !== null) && (
-            <div className="pt-2 border-t border-gray-100">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-gray-500 flex items-center gap-1">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17l6-6 4 4 8-8v4h2V4h-7v2h4l-7 7-4-4-7 7z"/></svg>
-                  Probabilidad de mercado
-                </span>
-                <span className="text-[10px] text-gray-400 italic">Polymarket</span>
+          {match.marketSlug && (match.marketHomeProb !== null || match.marketAwayProb !== null || match.marketDrawProb !== null) && (() => {
+            const norm = normalizeMarket(match.marketHomeProb, match.marketDrawProb, match.marketAwayProb)
+            return (
+              <div className="pt-2 border-t border-gray-100">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-gray-500 flex items-center gap-1">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17l6-6 4 4 8-8v4h2V4h-7v2h4l-7 7-4-4-7 7z"/></svg>
+                    Probabilidad de mercado
+                  </span>
+                  <span className="text-[10px] text-gray-400 italic">Polymarket</span>
+                </div>
+                <div className="flex items-center justify-end text-xs mb-1">
+                  <MarketFavorite match={match} normalized={norm} />
+                </div>
+                <div className="flex gap-1 h-4 rounded-md overflow-hidden bg-gray-100">
+                  {norm.home > 0 && (
+                    <div className="bg-blue-400" style={{ width: `${norm.home * 100}%` }} title={`${match.homeTeam}: ${pct(norm.home)}`} />
+                  )}
+                  {norm.draw > 0 && (
+                    <div className="bg-gray-400" style={{ width: `${norm.draw * 100}%` }} title={`Empate: ${pct(norm.draw)}`} />
+                  )}
+                  {norm.away > 0 && (
+                    <div className="bg-red-400" style={{ width: `${norm.away * 100}%` }} title={`${match.awayTeam}: ${pct(norm.away)}`} />
+                  )}
+                </div>
+                <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                  <span>{pct(norm.home)}</span>
+                  <span>{pct(norm.draw)}</span>
+                  <span>{pct(norm.away)}</span>
+                </div>
               </div>
-              <div className="flex items-center justify-end text-xs mb-1">
-                <MarketFavorite match={match} />
-              </div>
-              <div className="flex gap-1 h-4 rounded-md overflow-hidden bg-gray-100">
-                {(match.marketHomeProb ?? 0) > 0 && (
-                  <div className="bg-blue-400" style={{ width: `${(match.marketHomeProb ?? 0) * 100}%` }} title={`${match.homeTeam}: ${pctMarket(match.marketHomeProb)}`} />
-                )}
-                {(match.marketDrawProb ?? 0) > 0 && (
-                  <div className="bg-gray-400" style={{ width: `${(match.marketDrawProb ?? 0) * 100}%` }} title={`Empate: ${pctMarket(match.marketDrawProb)}`} />
-                )}
-                {(match.marketAwayProb ?? 0) > 0 && (
-                  <div className="bg-red-400" style={{ width: `${(match.marketAwayProb ?? 0) * 100}%` }} title={`${match.awayTeam}: ${pctMarket(match.marketAwayProb)}`} />
-                )}
-              </div>
-              <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
-                <span>{pctMarket(match.marketHomeProb)}</span>
-                <span>{pctMarket(match.marketDrawProb)}</span>
-                <span>{pctMarket(match.marketAwayProb)}</span>
-              </div>
-            </div>
-          )}
+            )
+          })()}
         </div>
       )}
     </div>
   )
 }
 
-function pctMarket(v: number | null): string {
-  if (v === null) return '-'
+function pct(v: number): string {
   return `${Math.round(v * 100)}%`
 }
 
-function MarketFavorite({ match }: { match: MatchAnalytics }) {
-  const home = match.marketHomeProb ?? 0
-  const draw = match.marketDrawProb ?? 0
-  const away = match.marketAwayProb ?? 0
+// Polymarket exposes each outcome as a separate binary Yes/No market, so the
+// three "Yes" prices are not guaranteed to sum to 1. We normalize the three
+// probabilities here so what we render always adds up to 100%.
+function normalizeMarket(
+  home: number | null,
+  draw: number | null,
+  away: number | null
+): { home: number; draw: number; away: number } {
+  const h = home ?? 0
+  const d = draw ?? 0
+  const a = away ?? 0
+  const sum = h + d + a
+  if (sum === 0) return { home: 0, draw: 0, away: 0 }
+  return { home: h / sum, draw: d / sum, away: a / sum }
+}
+
+function MarketFavorite({
+  match,
+  normalized,
+}: {
+  match: MatchAnalytics
+  normalized: { home: number; draw: number; away: number }
+}) {
+  const { home, draw, away } = normalized
   const max = Math.max(home, draw, away)
   if (max === 0) return <span className="text-gray-400">sin datos</span>
 
