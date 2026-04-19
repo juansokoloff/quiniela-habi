@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Profile } from '@/types'
 import { Menu, X } from 'lucide-react'
 import Logo from '@/components/Logo'
+import ThemeToggle from '@/components/ThemeToggle'
 
 interface NavbarProps {
   profile: Profile
@@ -68,6 +69,7 @@ export default function Navbar({ profile }: NavbarProps) {
             <span className="text-sm text-green-100 hidden sm:block">
               {profile.full_name}
             </span>
+            <ThemeToggle />
             <button
               onClick={handleLogout}
               className="text-sm bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition hidden sm:block"

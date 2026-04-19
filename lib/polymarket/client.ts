@@ -106,6 +106,25 @@ interface PolymarketEvent {
   markets: PolymarketMarket[]
 }
 
+/**
+ * Normalize Polymarket probabilities so they sum to 1.
+ * Each Polymarket market is an independent Yes/No contract, so the raw "Yes"
+ * prices across home/draw/away don't arbitrage to exactly 1 — typically 1.05-1.35.
+ * Callers should persist the raw values and normalize only at display time.
+ */
+export function normalizeMarket(
+  home: number | null | undefined,
+  draw: number | null | undefined,
+  away: number | null | undefined
+): { home: number; draw: number; away: number } {
+  const h = home ?? 0
+  const d = draw ?? 0
+  const a = away ?? 0
+  const sum = h + d + a
+  if (sum === 0) return { home: 0, draw: 0, away: 0 }
+  return { home: h / sum, draw: d / sum, away: a / sum }
+}
+
 export interface MarketOdds {
   slug: string
   homeProb: number | null

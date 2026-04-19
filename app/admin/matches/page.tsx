@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { phaseLabel } from '@/lib/scoring'
+import { normalizeMarket } from '@/lib/polymarket/client'
 import { MatchPhase } from '@/types'
 import SyncMatchesButton from '@/components/admin/SyncMatchesButton'
 import SyncPolymarketButton from '@/components/admin/SyncPolymarketButton'
@@ -66,7 +67,7 @@ export default async function AdminMatchesPage() {
                   <td className="px-4 py-3 text-xs">
                     {m.polymarket_slug ? (
                       (() => {
-                        const n = normalize(m.polymarket_home_prob, m.polymarket_draw_prob, m.polymarket_away_prob)
+                        const n = normalizeMarket(m.polymarket_home_prob, m.polymarket_draw_prob, m.polymarket_away_prob)
                         return (
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-1 text-gray-700 font-medium">
@@ -106,21 +107,6 @@ export default async function AdminMatchesPage() {
 function pct(v: number | null | undefined): string {
   if (v === null || v === undefined) return '-'
   return `${Math.round(Number(v) * 100)}%`
-}
-
-// Polymarket exposes each outcome as a separate binary Yes/No market, so the
-// raw "Yes" prices can sum to 105-135%. Normalize to 100% for display.
-function normalize(
-  home: number | null | undefined,
-  draw: number | null | undefined,
-  away: number | null | undefined
-): { home: number; draw: number; away: number } {
-  const h = Number(home ?? 0)
-  const d = Number(draw ?? 0)
-  const a = Number(away ?? 0)
-  const sum = h + d + a
-  if (sum === 0) return { home: 0, draw: 0, away: 0 }
-  return { home: h / sum, draw: d / sum, away: a / sum }
 }
 
 function StatusBadge({ status }: { status: string }) {

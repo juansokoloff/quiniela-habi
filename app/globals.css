@@ -1,7 +1,61 @@
 @import "tailwindcss";
 
+/* Dark mode via class on <html>. Components opt in with `dark:` Tailwind
+   variants. Tailwind v4's default dark variant targets `[data-theme="dark"]`
+   or the `.dark` class on an ancestor — we use the class form. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 body {
   background: #f9fafb;
   color: #111827;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+html.dark body {
+  background: #0a0f0d;
+  color: #e5e7eb;
+}
+
+/* Prevent theme flash before ThemeProvider hydrates. */
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+/* Global dark-mode overrides for existing Tailwind utility classes. These
+   cover the bulk of the app without having to add `dark:` variants to every
+   component. Components that need more nuanced dark styling can still opt in
+   via explicit `dark:` utilities — those win thanks to the cascade. */
+html.dark .bg-white { background-color: #1f2937; }
+html.dark .bg-gray-50 { background-color: #0f1512; }
+html.dark .bg-gray-100 { background-color: #1f2937; }
+html.dark .bg-green-50 { background-color: #0f2a1c; }
+html.dark .bg-blue-50 { background-color: #0f1e2e; }
+html.dark .bg-red-50 { background-color: #2a0f14; }
+html.dark .bg-yellow-50 { background-color: #2a230a; }
+
+html.dark .text-gray-900 { color: #f3f4f6; }
+html.dark .text-gray-800 { color: #e5e7eb; }
+html.dark .text-gray-700 { color: #d1d5db; }
+html.dark .text-gray-600 { color: #9ca3af; }
+html.dark .text-gray-500 { color: #9ca3af; }
+html.dark .text-gray-400 { color: #6b7280; }
+
+html.dark .border-gray-100 { border-color: #374151; }
+html.dark .border-gray-200 { border-color: #374151; }
+html.dark .border-gray-300 { border-color: #4b5563; }
+
+/* Form fields get the same treatment so inputs don't stay blinding-white. */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  border-color: #4b5563;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #6b7280;
 }

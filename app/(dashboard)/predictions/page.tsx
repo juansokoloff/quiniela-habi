@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createAdminClient, getServerUser } from '@/lib/supabase/server'
 import PredictionsGrid from '@/components/dashboard/PredictionsGrid'
+import PendingPredictionsBanner from '@/components/dashboard/PendingPredictionsBanner'
 import { Match, Prediction } from '@/types'
 import { getLeagueStats } from '@/lib/stats'
 
@@ -32,8 +33,30 @@ export default async function PredictionsPage() {
 
   const totalPoints = predictions?.reduce((sum, p) => sum + (p.points_earned || 0), 0) ?? 0
 
+  // Count upcoming editable matches (scheduled, >10 min away) without a prediction
+  const predictedIds = new Set(predictions?.map(p => p.match_id) ?? [])
+  const now = Date.now()
+  const upcoming = (matches ?? []).filter(m => {
+    if (m.status !== 'scheduled') return false
+    const cutoff = new Date(m.match_date).getTime() - 10 * 60 * 1000
+    return now < cutoff
+  })
+  const pending = upcoming.filter(m => !predictedIds.has(m.id))
+  const pendingCount = pending.length
+  const nextPending = pending[0]
+  const nextMatchInMinutes = nextPending
+    ? Math.max(
+        0,
+        Math.round((new Date(nextPending.match_date).getTime() - now) / 60000)
+      )
+    : undefined
+
   return (
     <div className="space-y-8">
+      <PendingPredictionsBanner
+        pendingCount={pendingCount}
+        nextMatchInMinutes={nextMatchInMinutes}
+      />
       {/* Stats header */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">

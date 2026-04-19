@@ -182,6 +182,91 @@ export async function getLeagueStats(
   }
 }
 
+export interface CalibrationStats {
+  finishedMatches: number
+  matchesWithCrowd: number
+  matchesWithMarket: number
+  crowdAccuracy: number // pct of finished matches where crowd majority picked the actual winner
+  marketAccuracy: number // pct where market favorite was the actual winner
+  agreed: number // both picked the same winner
+  agreedAndRight: number // and were right
+  disagreed: number // picked different winners
+  crowdRightDisagreed: number // when they disagreed, crowd was right
+  marketRightDisagreed: number // when they disagreed, market was right
+}
+
+type WinnerPick = 'home' | 'draw' | 'away'
+
+function pickWinner(home: number, draw: number, away: number): WinnerPick | null {
+  const m = Math.max(home, draw, away)
+  if (m === 0) return null
+  if (m === home) return 'home'
+  if (m === away) return 'away'
+  return 'draw'
+}
+
+export function computeCalibration(analytics: MatchAnalytics[]): CalibrationStats {
+  const finished = analytics.filter(
+    a => a.status === 'finished' && a.homeScore !== null && a.awayScore !== null
+  )
+
+  let matchesWithCrowd = 0
+  let matchesWithMarket = 0
+  let crowdRight = 0
+  let marketRight = 0
+  let agreed = 0
+  let agreedAndRight = 0
+  let disagreed = 0
+  let crowdRightDisagreed = 0
+  let marketRightDisagreed = 0
+
+  for (const m of finished) {
+    const actualWinner: WinnerPick =
+      m.homeScore! > m.awayScore! ? 'home'
+      : m.homeScore! < m.awayScore! ? 'away'
+      : 'draw'
+
+    const crowdPick = pickWinner(m.pctHomeWin, m.pctDraw, m.pctAwayWin)
+    const hasMarket = m.marketHomeProb !== null && m.marketAwayProb !== null && m.marketDrawProb !== null
+    const marketPick = hasMarket
+      ? pickWinner(m.marketHomeProb!, m.marketDrawProb!, m.marketAwayProb!)
+      : null
+
+    if (crowdPick) {
+      matchesWithCrowd++
+      if (crowdPick === actualWinner) crowdRight++
+    }
+    if (marketPick) {
+      matchesWithMarket++
+      if (marketPick === actualWinner) marketRight++
+    }
+
+    if (crowdPick && marketPick) {
+      if (crowdPick === marketPick) {
+        agreed++
+        if (crowdPick === actualWinner) agreedAndRight++
+      } else {
+        disagreed++
+        if (crowdPick === actualWinner) crowdRightDisagreed++
+        if (marketPick === actualWinner) marketRightDisagreed++
+      }
+    }
+  }
+
+  return {
+    finishedMatches: finished.length,
+    matchesWithCrowd,
+    matchesWithMarket,
+    crowdAccuracy: matchesWithCrowd ? (crowdRight / matchesWithCrowd) * 100 : 0,
+    marketAccuracy: matchesWithMarket ? (marketRight / matchesWithMarket) * 100 : 0,
+    agreed,
+    agreedAndRight,
+    disagreed,
+    crowdRightDisagreed,
+    marketRightDisagreed,
+  }
+}
+
 export async function getMatchAnalytics(
   supabase: SupabaseClient
 ): Promise<MatchAnalytics[]> {

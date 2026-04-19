@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createAdminClient, getServerUser } from '@/lib/supabase/server'
+import { paymentValidationLimiter, rateLimitResponse } from '@/lib/ratelimit'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -55,6 +56,11 @@ Responde ÚNICAMENTE con el siguiente formato JSON (sin bloques de código markd
 export async function POST(request: NextRequest) {
   const user = await getServerUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  // Each validation spends an Anthropic call — cap it hard per user.
+  const { success, reset } = await paymentValidationLimiter.limit(user.id)
+  if (!success) return rateLimitResponse(reset)
+
   const supabase = createAdminClient()
 
   // Check if already approved — no need to call Claude again

@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, getServerUser } from '@/lib/supabase/server'
+import { uploadLimiter, rateLimitResponse } from '@/lib/ratelimit'
 
 export async function POST(request: NextRequest) {
   const user = await getServerUser()
   if (!user) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
+
+  const { success, reset } = await uploadLimiter.limit(user.id)
+  if (!success) return rateLimitResponse(reset)
 
   const formData = await request.formData()
   const file = formData.get('file') as File | null

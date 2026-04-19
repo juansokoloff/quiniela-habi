@@ -5,6 +5,7 @@ import { MatchPhase } from '@/types'
 import { phaseLabel } from '@/lib/scoring'
 import { teamFlag } from '@/lib/flags'
 import { MatchAnalytics } from '@/lib/stats'
+import { normalizeMarket } from '@/lib/polymarket/client'
 import MatchFilterBar, {
   DEFAULT_FILTERS,
   MatchFilters,
@@ -209,22 +210,6 @@ function MatchAnalyticsCard({ match }: { match: MatchAnalytics }) {
 
 function pct(v: number): string {
   return `${Math.round(v * 100)}%`
-}
-
-// Polymarket exposes each outcome as a separate binary Yes/No market, so the
-// three "Yes" prices are not guaranteed to sum to 1. We normalize the three
-// probabilities here so what we render always adds up to 100%.
-function normalizeMarket(
-  home: number | null,
-  draw: number | null,
-  away: number | null
-): { home: number; draw: number; away: number } {
-  const h = home ?? 0
-  const d = draw ?? 0
-  const a = away ?? 0
-  const sum = h + d + a
-  if (sum === 0) return { home: 0, draw: 0, away: 0 }
-  return { home: h / sum, draw: d / sum, away: a / sum }
 }
 
 function MarketFavorite({

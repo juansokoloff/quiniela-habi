@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, getServerUser } from '@/lib/supabase/server'
+import { predictionLimiter, rateLimitResponse } from '@/lib/ratelimit'
 
 export async function POST(request: NextRequest) {
   const user = await getServerUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  const { success, reset } = await predictionLimiter.limit(user.id)
+  if (!success) return rateLimitResponse(reset)
+
   const supabase = await createAdminClient()
 
   const { matchId, predictedHome, predictedAway } = await request.json()

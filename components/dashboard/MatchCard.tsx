@@ -5,6 +5,7 @@ import { Match, Prediction } from '@/types'
 import { isEditable, phaseLabel, calculatePoints } from '@/lib/scoring'
 import { teamFlag } from '@/lib/flags'
 import { Lock, CheckCircle, Trophy } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -236,12 +237,27 @@ export default function MatchCard({ match, prediction, onPredictionChange, onSin
       {editable && (hasChanges || error || saved) && (
         <div className="mt-3 flex items-center gap-2">
           {error && <p className="text-xs text-red-500 flex-1">{error}</p>}
-          {saved && (
-            <div className="flex items-center gap-1 text-green-600 flex-1">
-              <CheckCircle className="w-4 h-4" />
-              <span className="text-xs font-medium">Guardado</span>
-            </div>
-          )}
+          <AnimatePresence>
+            {saved && (
+              <motion.div
+                key="saved-indicator"
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                className="flex items-center gap-1 text-green-600 flex-1"
+              >
+                <motion.span
+                  initial={{ scale: 0.4, rotate: -20 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 18 }}
+                >
+                  <CheckCircle className="w-4 h-4" />
+                </motion.span>
+                <span className="text-xs font-medium">Guardado</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
           {hasChanges && (
             <button
               onClick={handleSave}

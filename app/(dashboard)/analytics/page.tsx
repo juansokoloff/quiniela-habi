@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createAdminClient, getServerUser } from '@/lib/supabase/server'
-import { getMatchAnalytics } from '@/lib/stats'
+import { getMatchAnalytics, computeCalibration } from '@/lib/stats'
 import AnalyticsMatchList from '@/components/dashboard/AnalyticsMatchList'
+import CalibrationPanel from '@/components/dashboard/CalibrationPanel'
 
 export default async function AnalyticsPage() {
   const user = await getServerUser()
@@ -19,6 +20,7 @@ export default async function AnalyticsPage() {
   }
 
   const analytics = await getMatchAnalytics(supabase)
+  const calibration = computeCalibration(analytics)
 
   // Global summary
   const withPreds = analytics.filter(m => m.totalPredictions > 0)
@@ -51,6 +53,9 @@ export default async function AnalyticsPage() {
           value={String(analytics.reduce((s, m) => s + m.totalPredictions, 0))}
         />
       </div>
+
+      {/* Crowd vs market calibration */}
+      <CalibrationPanel stats={calibration} />
 
       {/* Per-match analytics with filters */}
       <AnalyticsMatchList analytics={analytics} />
