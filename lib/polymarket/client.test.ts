@@ -14,10 +14,10 @@ describe('candidateSlugs', () => {
     expect(slugs).toContain('fifwc-rsa-mex-2026-06-11')
   })
 
-  it('expande equipos con multiples codigos (South Korea kr/kor)', () => {
-    const slugs = candidateSlugs('South Korea', 'Canada', '2026-06-12')
-    expect(slugs).toContain('fifwc-kr-can-2026-06-12')
-    expect(slugs).toContain('fifwc-kor-can-2026-06-12')
+  it('Portugal expande con prt (slug real de Polymarket) y por (fallback)', () => {
+    const slugs = candidateSlugs('Colombia', 'Portugal', '2026-06-27')
+    expect(slugs).toContain('fifwc-col-prt-2026-06-27')
+    expect(slugs).toContain('fifwc-col-por-2026-06-27')
   })
 
   it('USA vs Paraguay cubre ambas fechas cuando Polymarket usa 2026-06-12 y DB tiene 2026-06-13', () => {
