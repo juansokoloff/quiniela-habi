@@ -53,9 +53,33 @@ describe('calculatePoints', () => {
       const r = calculatePoints(3, 0, 0, 2, 'group')
       expect(r.total).toBe(0)
     })
+
+    it('0-0 predicho y 0-0 real da 10 puntos', () => {
+      const r = calculatePoints(0, 0, 0, 0, 'group')
+      expect(r.total).toBe(10)
+    })
+
+    it('goleada imprevista: 1-0 predicho vs 5-0 real acierta ganador, home y diff errados', () => {
+      const r = calculatePoints(1, 0, 5, 0, 'group')
+      expect(r.result).toBe(5)
+      expect(r.away_goals).toBe(2)
+      expect(r.home_goals).toBe(0)
+      expect(r.goal_diff).toBe(0)
+      expect(r.total).toBe(7)
+    })
+
+    it('batacazo (ganador errado) sin goles acertados = 0', () => {
+      const r = calculatePoints(3, 1, 0, 2, 'group')
+      expect(r.total).toBe(0)
+    })
   })
 
   describe('fases eliminatorias (multiplicador 2x)', () => {
+    it('round_of_32 tambien aplica multiplicador 2x', () => {
+      const r = calculatePoints(2, 1, 2, 1, 'round_of_32')
+      expect(r.total).toBe(20)
+    })
+
     it('marcador exacto en octavos da 20 puntos', () => {
       const r = calculatePoints(2, 1, 2, 1, 'round_of_16')
       expect(r.total).toBe(20)
