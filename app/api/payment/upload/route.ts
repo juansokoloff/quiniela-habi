@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 import { createAdminClient, getServerUser } from '@/lib/supabase/server'
 import { uploadLimiter, rateLimitResponse } from '@/lib/ratelimit'
+
+const MAX_FILE_BYTES = 10 * 1024 * 1024 // 10 MB — matches the UI hint
+
+const ALLOWED_TYPES: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'application/pdf': 'pdf',
+}
 
 export async function POST(request: NextRequest) {
   const user = await getServerUser()
@@ -18,13 +28,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No se proporcionó archivo' }, { status: 400 })
   }
 
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
-  if (!allowedTypes.includes(file.type)) {
+  const extension = ALLOWED_TYPES[file.type]
+  if (!extension) {
     return NextResponse.json({ error: 'Tipo de archivo no permitido. Solo se aceptan imágenes (JPG, PNG, WEBP) o PDF.' }, { status: 400 })
   }
 
+  if (file.size > MAX_FILE_BYTES) {
+    return NextResponse.json({ error: 'El archivo excede el tamaño máximo de 10MB.' }, { status: 400 })
+  }
+
   const supabase = createAdminClient()
-  const fileName = `${Date.now()}-${file.name}`
+  // Server-generated filename — never echo user-supplied names into storage paths.
+  const fileName = `${Date.now()}-${randomUUID()}.${extension}`
   const filePath = `${user.id}/${fileName}`
 
   // Upload file to storage
