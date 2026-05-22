@@ -5,6 +5,11 @@ export default async function RulesPage() {
   const user = await getServerUser()
   if (!user) redirect('/login')
 
+  const adminEmail = process.env.ADMIN_EMAIL ?? ''
+  const adminName = process.env.ADMIN_DISPLAY_NAME ?? 'Administrador'
+  const nequi = process.env.PAYMENT_NEQUI_CO ?? ''
+  const clabe = process.env.PAYMENT_CLABE_MX ?? ''
+
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div>
@@ -40,10 +45,10 @@ export default async function RulesPage() {
         <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
           <li>Para participar debes registrarte con tu correo corporativo (<strong>@habi.co</strong> o <strong>@tuhabi.mx</strong>) y subir un comprobante de pago.</li>
           <li>
-            <strong>Colombia:</strong> Nequi a la llave BreB <code className="bg-gray-100 px-1 rounded">[REDACTED-NEQUI]</code> por <strong>$20,000 COP</strong>.
+            <strong>Colombia:</strong> Nequi a la llave BreB <code className="bg-gray-100 px-1 rounded">{nequi}</code> por <strong>$20,000 COP</strong>.
           </li>
           <li>
-            <strong>Mexico:</strong> Transferencia a CLABE <code className="bg-gray-100 px-1 rounded">[REDACTED-CLABE]</code> por <strong>$100 MXN</strong>.
+            <strong>Mexico:</strong> Transferencia a CLABE <code className="bg-gray-100 px-1 rounded">{clabe}</code> por <strong>$100 MXN</strong>.
           </li>
           <li>El comprobante sera validado automaticamente. El administrador tambien puede aprobar pagos manualmente.</li>
         </ul>
@@ -190,12 +195,12 @@ export default async function RulesPage() {
         <div className="space-y-4">
           <div>
             <p className="text-gray-700 text-sm">
-              <strong>Administrador:</strong> Admin Name
+              <strong>Administrador:</strong> {adminName}
             </p>
             <p className="text-gray-700 text-sm">
               <strong>Contacto:</strong>{' '}
-              <a href="mailto:admin@example.com" className="text-green-700 hover:underline">
-                admin@example.com
+              <a href={`mailto:${adminEmail}`} className="text-green-700 hover:underline">
+                {adminEmail}
               </a>
             </p>
           </div>

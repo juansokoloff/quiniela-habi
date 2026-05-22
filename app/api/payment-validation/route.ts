@@ -5,28 +5,28 @@ import { paymentValidationLimiter, rateLimitResponse } from '@/lib/ratelimit'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-const PAYMENT_VALIDATION_PROMPT = `Eres un asistente de validación de pagos para la Quiniela Habi del Mundial 2026.
+// Beneficiary identity and destination account numbers are environment-driven
+// so they never live in source control. Set these in your deployment platform
+// (Vercel) — they are required for validation to work.
+const BENEFICIARY_FULL_NAME = process.env.PAYMENT_BENEFICIARY_FULL_NAME ?? ''
+const BENEFICIARY_FIRST = process.env.PAYMENT_BENEFICIARY_FIRST_NAME ?? ''
+const BENEFICIARY_LAST = process.env.PAYMENT_BENEFICIARY_LAST_NAME ?? ''
+const NEQUI_CO = process.env.PAYMENT_NEQUI_CO ?? ''
+const CLABE_MX = process.env.PAYMENT_CLABE_MX ?? ''
+
+function buildPaymentValidationPrompt(): string {
+  return `Eres un asistente de validación de pagos para la Quiniela Habi del Mundial 2026.
 
 Tu tarea es analizar el comprobante de pago que se te proporciona y determinar si es válido.
 
 CRITERIOS DE VALIDACIÓN:
 El comprobante es válido si cumple TODAS las siguientes condiciones:
 
-1. DESTINATARIO: El pago debe estar dirigido a Beneficiary Full Name. Acepta cualquier combinación o variación del nombre, incluyendo:
-   - "Beneficiary Full Name"
-   - "Beneficiary Name"
-   - "Beneficiary Name"
-   - "Beneficiary Name"
-   - "Beneficiary Name"
-   - "Juan Sebastian"
-   - "Beneficiary Name"
-   - "BENEFICIARY FULL NAME"
-   - Cualquier otra combinación parcial que incluya al menos "Juan" y "Sokoloff", o "Juan Sebastian" como parte del nombre.
-   NO rechaces solo porque el nombre aparece en un orden diferente o abreviado.
+1. DESTINATARIO: El pago debe estar dirigido a ${BENEFICIARY_FULL_NAME}. Acepta cualquier combinación o variación razonable del nombre (orden distinto, abreviaciones de nombres intermedios, iniciales en vez de nombre completo, solo primer nombre + apellido, todo en mayúsculas, etc.). Lo importante es que aparezca al menos "${BENEFICIARY_FIRST}" y "${BENEFICIARY_LAST}" (o variantes obvias). NO rechaces solo porque el nombre aparece en un orden diferente o abreviado.
 
 2. DATOS DE DESTINO SEGÚN EL PAÍS:
-   - COLOMBIA: El pago debe ser a Nequi, a la llave BreB con número [REDACTED-NEQUI]. Acepta si aparece el número completo o parcial (por ejemplo: "***8083650", "310***3650", "3108083***", "****83650", etc.). Muchos comprobantes ocultan parte del número por seguridad — esto es normal y válido. Lo importante es que los dígitos visibles coincidan con [REDACTED-NEQUI].
-   - MÉXICO: El pago debe ser a la cuenta CLABE [REDACTED-CLABE]. Acepta si aparece el número completo o parcial (por ejemplo: "0121800157****0970", "****04290970", "012180****", etc.). Los bancos frecuentemente enmascaran parte de la CLABE — esto es normal. Lo importante es que los dígitos visibles coincidan con [REDACTED-CLABE].
+   - COLOMBIA: El pago debe ser a Nequi, a la llave BreB con número ${NEQUI_CO}. Acepta si aparece el número completo o parcial con dígitos ocultos por seguridad (asteriscos, guiones, etc.). Lo importante es que los dígitos visibles coincidan con ${NEQUI_CO}.
+   - MÉXICO: El pago debe ser a la cuenta CLABE ${CLABE_MX}. Acepta si aparece el número completo o parcial enmascarado (los bancos frecuentemente lo hacen). Lo importante es que los dígitos visibles coincidan con ${CLABE_MX}.
    En ambos casos: NO rechaces por dígitos ocultos/enmascarados. Solo rechaza si los dígitos VISIBLES no coinciden con el número esperado.
 
 3. FORMATO Y AUTENTICIDAD DEL DOCUMENTO:
@@ -52,10 +52,18 @@ Responde ÚNICAMENTE con el siguiente formato JSON (sin bloques de código markd
   "reason": "Explicación breve de la decisión",
   "details": "Detalles adicionales observados en el comprobante"
 }`
+}
 
 export async function POST(request: NextRequest) {
   const user = await getServerUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  if (!BENEFICIARY_FULL_NAME || !NEQUI_CO || !CLABE_MX) {
+    return NextResponse.json(
+      { error: 'Configuración de pagos incompleta en el servidor' },
+      { status: 500 }
+    )
+  }
 
   // Each validation spends an Anthropic call — cap it hard per user.
   const { success, reset } = await paymentValidationLimiter.limit(user.id)
@@ -139,7 +147,7 @@ export async function POST(request: NextRequest) {
           fileContent,
           {
             type: 'text',
-            text: PAYMENT_VALIDATION_PROMPT,
+            text: buildPaymentValidationPrompt(),
           },
         ],
       },

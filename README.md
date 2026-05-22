@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Quiniela Habi
 
-## Getting Started
+A self-hosted World Cup 2026 prediction pool ("quiniela") built for the employees of a single company. Players predict match scores, earn points based on accuracy, and compete on a live leaderboard against the rest of the company — and against the Polymarket consensus.
 
-First, run the development server:
+Built with Next.js (App Router), Supabase (Postgres + Auth + Realtime + Storage), the Anthropic API for payment-receipt validation, and Polymarket's public Gamma API for market odds.
+
+## Features
+
+- Score-prediction grid for all 104 matches of the 2026 World Cup
+- Scoring engine: 5 pts for picking the winner, 2 pts each for exact home/away goal counts, 1 pt for goal difference (multiplied 2x in knockout rounds)
+- Real-time live scores via Supabase Realtime + a 1-minute cron that only fires inside match windows
+- Crowd-vs-market calibration: how the company's average prediction stacks up against Polymarket's implied probabilities
+- AI-powered payment-receipt validation (Anthropic) so admins don't manually verify hundreds of bank screenshots
+- PWA installable on mobile, with dark mode
+- Rate limiting (Upstash) and error tracking (Sentry), both no-op when their env vars aren't set
+- Per-match analytics dashboard for admins
+
+## Stack
+
+- Next.js 16 (App Router, Server Components, Server Actions)
+- Supabase (Postgres, Auth, Realtime, Storage)
+- Tailwind v4 + Framer Motion
+- Vitest for unit tests
+- Anthropic SDK (Claude)
+- Polymarket Gamma API (public)
+- football-data.org API (free tier)
+
+## Local development
 
 ```bash
+git clone <this-repo>
+cd quiniela-habi
+npm install
+cp .env.example .env.local
+# Edit .env.local with your real values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run the migrations in `supabase/migrations/` in order against your Supabase project's SQL editor. After your admin user signs up, manually promote them:
 
-## Learn More
+```sql
+UPDATE profiles SET role = 'admin' WHERE email = '<your-admin-email>';
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Environment variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See `.env.example` for the full list. Required minimum: Supabase URL + keys, Anthropic API key, football-data.org API key, a `CRON_SECRET`, and the payment-validation values (beneficiary name, Nequi number, CLABE).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Cron jobs
 
-## Deploy on Vercel
+- Daily full sync of fixtures from football-data.org — schedule via Vercel Cron or any external cron pointed at `/api/matches/sync`
+- 1-minute live sync during match windows — `/api/matches/live-sync` (auto-skips when no match is within ±10 min / +3h)
+- Daily Polymarket odds refresh — `/api/polymarket/sync`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+All three endpoints require `Authorization: Bearer ${CRON_SECRET}`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tests
+
+```bash
+npm test
+```
+
+## License
+
+MIT

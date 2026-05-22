@@ -6,6 +6,7 @@ export const metadata = {
 }
 
 export default function TermsPage() {
+  const adminEmail = process.env.ADMIN_EMAIL ?? ''
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-800 to-green-950 py-10 px-4">
       <div className="max-w-3xl mx-auto">
@@ -221,10 +222,10 @@ export default function TermsPage() {
               Para consultas, solicitudes ARCO, reportes de uso indebido o cualquier otro
               asunto relacionado con la quiniela, puedes escribir a{' '}
               <a
-                href="mailto:admin@example.com"
+                href={`mailto:${adminEmail}`}
                 className="text-green-700 hover:underline font-medium"
               >
-                admin@example.com
+                {adminEmail}
               </a>
               .
             </p>

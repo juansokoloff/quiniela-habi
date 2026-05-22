@@ -143,7 +143,11 @@ CREATE POLICY "Admins can update all receipts" ON payment_receipts
 -- FUNCTIONS & TRIGGERS
 -- ============================================
 
--- Auto-create profile on signup
+-- Auto-create profile on signup.
+-- All new users default to role='user'. Admins are bootstrapped manually by
+-- running:
+--   UPDATE profiles SET role = 'admin' WHERE email = '<your-admin-email>';
+-- after the admin user has signed up.
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -152,7 +156,7 @@ BEGIN
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
-    CASE WHEN NEW.email = 'admin@example.com' THEN 'admin' ELSE 'user' END
+    'user'
   );
   RETURN NEW;
 END;
