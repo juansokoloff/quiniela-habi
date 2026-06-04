@@ -147,16 +147,19 @@ async function fetchEventBySlug(slug: string): Promise<PolymarketEvent | null> {
   }
 }
 
-// Team name aliases — maps our DB name to alternate names used by Polymarket
+// Team name aliases — maps our DB name to alternate names used by Polymarket.
+// Polymarket uses the FIFA official spellings (e.g. "Türkiye" with diacritics,
+// "Cabo Verde" in Portuguese), which often differ from common English names.
 const TEAM_NAME_ALIASES: Record<string, string[]> = {
   'South Korea': ['korea republic', 'korea'],
   'Ivory Coast': ['cote d\'ivoire', 'côte d\'ivoire'],
   Czechia: ['czech republic'],
-  'Cape Verde Islands': ['cape verde'],
+  'Cape Verde Islands': ['cape verde', 'cabo verde'],
   'Bosnia-Herzegovina': ['bosnia and herzegovina', 'bosnia'],
   'Congo DR': ['dr congo', 'democratic republic of the congo'],
   Curaçao: ['curacao'],
   England: ['english'],
+  Turkey: ['türkiye', 'turkiye'],
 }
 
 function teamMatches(text: string, team: string): boolean {
