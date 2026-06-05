@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
-const ALLOWED_DOMAINS = ['habi.co', 'tuhabi.mx']
+const ALLOWED_DOMAINS = ['habi.co', 'tuhabi.mx', 'pulppo.com', 'pulppo.mx']
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -24,7 +24,7 @@ export default function RegisterPage() {
 
     const domain = email.split('@')[1]?.toLowerCase()
     if (!domain || !ALLOWED_DOMAINS.includes(domain)) {
-      setError('Solo se permiten correos corporativos @habi.co o @tuhabi.mx')
+      setError('Solo se permiten correos corporativos @habi.co, @tuhabi.mx, @pulppo.com o @pulppo.mx')
       return
     }
 
@@ -135,7 +135,7 @@ export default function RegisterPage() {
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
               placeholder="tu@habi.co"
             />
-            <p className="text-xs text-gray-400 mt-1">Solo correos @habi.co o @tuhabi.mx</p>
+            <p className="text-xs text-gray-400 mt-1">Solo correos @habi.co, @tuhabi.mx, @pulppo.com o @pulppo.mx</p>
           </div>
 
           <div>

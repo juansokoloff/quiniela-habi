@@ -22,7 +22,7 @@ Tu tarea es analizar el comprobante de pago que se te proporciona y determinar s
 CRITERIOS DE VALIDACIÓN:
 El comprobante es válido si cumple TODAS las siguientes condiciones:
 
-1. DESTINATARIO: El pago debe estar dirigido a ${BENEFICIARY_FULL_NAME}. Acepta cualquier combinación o variación razonable del nombre (orden distinto, abreviaciones de nombres intermedios, iniciales en vez de nombre completo, solo primer nombre + apellido, todo en mayúsculas, etc.). Lo importante es que aparezca al menos "${BENEFICIARY_FIRST}" y "${BENEFICIARY_LAST}" (o variantes obvias). NO rechaces solo porque el nombre aparece en un orden diferente o abreviado.
+1. DESTINATARIO: NO es obligatorio que aparezca el nombre del destinatario. Muchos comprobantes bancarios no lo incluyen o lo ocultan parcialmente. Si aparece un nombre, ignóralo — no valides ni rechaces por el nombre del destinatario.
 
 2. DATOS DE DESTINO SEGÚN EL PAÍS:
    - COLOMBIA: El pago debe ser a Nequi, a la llave BreB con número ${NEQUI_CO}. Acepta si aparece el número completo o parcial con dígitos ocultos por seguridad (asteriscos, guiones, etc.). Lo importante es que los dígitos visibles coincidan con ${NEQUI_CO}.
