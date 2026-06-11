@@ -249,13 +249,26 @@ SELECT
   p.full_name,
   p.created_at AS registration_date,
   COALESCE(SUM(pr.points_earned), 0) AS total_points,
-  COUNT(CASE WHEN pr.points_earned = 10 OR pr.points_earned = 20 THEN 1 END) AS perfect_scores,
-  COUNT(CASE WHEN pr.points_earned IN (7, 14) THEN 1 END) AS partial_scores_7,
-  COUNT(CASE WHEN pr.points_earned IN (6, 12) THEN 1 END) AS partial_scores_6,
-  COUNT(CASE WHEN pr.points_earned IN (5, 10) THEN 1 END) AS partial_scores_5,
+  COUNT(CASE
+    WHEN m.phase = 'group' AND pr.points_earned = 10 THEN 1
+    WHEN m.phase <> 'group' AND pr.points_earned = 20 THEN 1
+  END) AS perfect_scores,
+  COUNT(CASE
+    WHEN m.phase = 'group' AND pr.points_earned = 7 THEN 1
+    WHEN m.phase <> 'group' AND pr.points_earned = 14 THEN 1
+  END) AS partial_scores_7,
+  COUNT(CASE
+    WHEN m.phase = 'group' AND pr.points_earned = 6 THEN 1
+    WHEN m.phase <> 'group' AND pr.points_earned = 12 THEN 1
+  END) AS partial_scores_6,
+  COUNT(CASE
+    WHEN m.phase = 'group' AND pr.points_earned = 5 THEN 1
+    WHEN m.phase <> 'group' AND pr.points_earned = 10 THEN 1
+  END) AS partial_scores_5,
   COUNT(pr.id) AS matches_predicted
 FROM profiles p
 LEFT JOIN predictions pr ON p.id = pr.user_id
+LEFT JOIN matches m ON pr.match_id = m.id
 WHERE p.payment_status = 'approved'
 GROUP BY p.id, p.full_name, p.created_at
 ORDER BY total_points DESC, perfect_scores DESC, partial_scores_7 DESC, registration_date ASC;
