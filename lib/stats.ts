@@ -96,13 +96,21 @@ export async function getLeagueStats(
 
   const finishedIds = finishedMatches.map(m => m.id)
 
-  // Get all predictions for finished matches
-  const { data: allPreds } = await supabase
-    .from('predictions')
-    .select('match_id, user_id, predicted_home, predicted_away, points_earned')
-    .in('match_id', finishedIds)
-
-  const preds = (allPreds ?? []) as PredictionRow[]
+  // Get all predictions for finished matches — paginate past Supabase 1000-row cap
+  const preds: PredictionRow[] = []
+  const PAGE_SIZE = 1000
+  let offset = 0
+  while (true) {
+    const { data } = await supabase
+      .from('predictions')
+      .select('match_id, user_id, predicted_home, predicted_away, points_earned')
+      .in('match_id', finishedIds)
+      .range(offset, offset + PAGE_SIZE - 1)
+    if (!data?.length) break
+    preds.push(...(data as PredictionRow[]))
+    if (data.length < PAGE_SIZE) break
+    offset += PAGE_SIZE
+  }
   const userPreds = preds.filter(p => p.user_id === userId)
 
   // Max points per match
@@ -286,12 +294,20 @@ export async function getMatchAnalytics(
 
   if (!matches?.length) return []
 
-  // All predictions
-  const { data: allPreds } = await supabase
-    .from('predictions')
-    .select('match_id, predicted_home, predicted_away')
-
-  const preds = (allPreds ?? []) as { match_id: string; predicted_home: number; predicted_away: number }[]
+  // All predictions — Supabase caps at 1000 rows by default, so paginate
+  const preds: { match_id: string; predicted_home: number; predicted_away: number }[] = []
+  const PAGE_SIZE = 1000
+  let offset = 0
+  while (true) {
+    const { data } = await supabase
+      .from('predictions')
+      .select('match_id, predicted_home, predicted_away')
+      .range(offset, offset + PAGE_SIZE - 1)
+    if (!data?.length) break
+    preds.push(...(data as typeof preds))
+    if (data.length < PAGE_SIZE) break
+    offset += PAGE_SIZE
+  }
 
   // Group predictions by match
   const predsByMatch = new Map<string, typeof preds>()
