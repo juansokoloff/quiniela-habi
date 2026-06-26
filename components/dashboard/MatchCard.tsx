@@ -8,6 +8,7 @@ import { Lock, CheckCircle, Trophy } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import MatchPredictions from './MatchPredictions'
 
 interface MatchCardProps {
   match: Match
@@ -269,6 +270,8 @@ export default function MatchCard({ match, prediction, onPredictionChange, onSin
           )}
         </div>
       )}
+
+      <MatchPredictions matchId={match.id} matchStatus={match.status} />
     </div>
   )
 }
