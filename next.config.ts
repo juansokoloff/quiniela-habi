@@ -2,7 +2,11 @@ import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    staleTimes: {
+      dynamic: 0,
+    },
+  },
 }
 
 // Only apply Sentry's build-time plugin when explicitly configured — otherwise
