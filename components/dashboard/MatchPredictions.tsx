@@ -10,12 +10,13 @@ interface PredictionRow {
   pointsEarned: number | null
 }
 
-export default function MatchPredictions({ matchId, matchStatus }: { matchId: string; matchStatus: string }) {
+export default function MatchPredictions({ matchId, matchStatus, matchDate }: { matchId: string; matchStatus: string; matchDate: string }) {
   const [open, setOpen] = useState(false)
   const [predictions, setPredictions] = useState<PredictionRow[] | null>(null)
   const [loading, setLoading] = useState(false)
 
-  if (matchStatus !== 'live' && matchStatus !== 'finished') return null
+  const matchStarted = matchStatus === 'live' || matchStatus === 'finished' || new Date(matchDate).getTime() <= Date.now()
+  if (!matchStarted) return null
 
   async function toggle() {
     if (open) {

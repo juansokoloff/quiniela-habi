@@ -21,16 +21,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Pago no aprobado' }, { status: 403 })
   }
 
-  // Only reveal predictions for live or finished matches
+  // Only reveal predictions once the match has started
   const { data: match } = await supabase
     .from('matches')
-    .select('status')
+    .select('status, match_date')
     .eq('id', matchId)
     .single()
 
   if (!match) return NextResponse.json({ error: 'Partido no encontrado' }, { status: 404 })
 
-  if (match.status !== 'live' && match.status !== 'finished') {
+  const matchStarted = match.status === 'live' || match.status === 'finished' || new Date(match.match_date).getTime() <= Date.now()
+
+  if (!matchStarted) {
     return NextResponse.json({ error: 'Las predicciones se revelan cuando el partido comienza' }, { status: 403 })
   }
 

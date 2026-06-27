@@ -271,7 +271,7 @@ export default function MatchCard({ match, prediction, onPredictionChange, onSin
         </div>
       )}
 
-      <MatchPredictions matchId={match.id} matchStatus={match.status} />
+      <MatchPredictions matchId={match.id} matchStatus={match.status} matchDate={match.match_date} />
     </div>
   )
 }
