@@ -75,10 +75,9 @@ export function transformMatch(m: ExternalMatch) {
   // Skip matches with unknown teams (elimination TBD) or unmapped stages
   if (!m.homeTeam.name || !m.awayTeam.name || !phase) return null
 
-  // Knockout scoring: the quiniela scores on REGULATION TIME only (90 min,
-  // no extra time, no penalties). football-data.org v4's `fullTime` INCLUDES
-  // penalty goals for shootout matches, so we must use `regularTime` for
-  // knockout matches that went to extra time or penalties.
+  // Knockout scoring: the quiniela scores on regulation + extra time (120 min),
+  // but NOT penalties. football-data.org v4's `fullTime` INCLUDES penalty goals
+  // for shootout matches, so we use `regularTime + extraTime` instead.
   let homeScore: number | null
   let awayScore: number | null
 
@@ -87,11 +86,11 @@ export function transformMatch(m: ExternalMatch) {
     (m.score.duration === 'EXTRA_TIME' || m.score.duration === 'PENALTY_SHOOTOUT')
 
   if (isKnockoutExtra && m.score.regularTime?.home != null && m.score.regularTime?.away != null) {
-    homeScore = m.score.regularTime.home
-    awayScore = m.score.regularTime.away
+    homeScore = m.score.regularTime.home + (m.score.extraTime?.home ?? 0)
+    awayScore = m.score.regularTime.away + (m.score.extraTime?.away ?? 0)
     console.info(
       `[sync] knockout ${m.homeTeam.name} vs ${m.awayTeam.name} finished ${m.score.duration}. ` +
-        `Using regularTime=${homeScore}-${awayScore} (fullTime=${m.score.fullTime.home}-${m.score.fullTime.away} includes pens)`
+        `Using regularTime+extraTime=${homeScore}-${awayScore} (fullTime=${m.score.fullTime.home}-${m.score.fullTime.away} includes pens)`
     )
   } else {
     homeScore = m.score.fullTime.home
