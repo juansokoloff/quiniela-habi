@@ -13,7 +13,7 @@ import { MatchPhase } from '@/types'
 // soon or currently in play/recently-finished but not yet reconciled.
 
 const LIVE_WINDOW_BEFORE_MS = 10 * 60 * 1000
-const LIVE_WINDOW_AFTER_MS = 3 * 60 * 60 * 1000
+const LIVE_WINDOW_AFTER_MS = 5 * 60 * 60 * 1000
 
 async function hasMatchesInLiveWindow(): Promise<boolean> {
   const supabase = createAdminClient()
@@ -26,7 +26,7 @@ async function hasMatchesInLiveWindow(): Promise<boolean> {
     .select('id, status', { count: 'exact' })
     .gte('match_date', from)
     .lte('match_date', to)
-    .in('status', ['scheduled', 'live'])
+    .in('status', ['scheduled', 'live', 'finished'])
     .limit(1)
 
   if (error) return false
