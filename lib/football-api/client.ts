@@ -13,6 +13,7 @@ interface ExternalScore {
   winner?: string | null
   duration?: string | null
   fullTime: { home: number | null; away: number | null }
+  regularTime?: { home: number | null; away: number | null }
   extraTime?: { home: number | null; away: number | null }
   penalties?: { home: number | null; away: number | null }
 }
@@ -74,22 +75,27 @@ export function transformMatch(m: ExternalMatch) {
   // Skip matches with unknown teams (elimination TBD) or unmapped stages
   if (!m.homeTeam.name || !m.awayTeam.name || !phase) return null
 
-  // Knockout scoring: our quiniela scores on the 120-min result (regulation +
-  // extra time, but NOT penalties). football-data.org v4's `fullTime` is
-  // historically the final score at the end of the match before any penalty
-  // shootout, so it already reflects 120 min when ET was played. We log a
-  // warning when a knockout match resolves via ET/penalties so we can spot
-  // any provider inconsistency during the tournament and fix it fast.
-  const { home: homeScore, away: awayScore } = m.score.fullTime
-  if (
+  // Knockout scoring: the quiniela scores on REGULATION TIME only (90 min,
+  // no extra time, no penalties). football-data.org v4's `fullTime` INCLUDES
+  // penalty goals for shootout matches, so we must use `regularTime` for
+  // knockout matches that went to extra time or penalties.
+  let homeScore: number | null
+  let awayScore: number | null
+
+  const isKnockoutExtra =
     phase !== 'group' &&
-    m.status === 'FINISHED' &&
     (m.score.duration === 'EXTRA_TIME' || m.score.duration === 'PENALTY_SHOOTOUT')
-  ) {
+
+  if (isKnockoutExtra && m.score.regularTime?.home != null && m.score.regularTime?.away != null) {
+    homeScore = m.score.regularTime.home
+    awayScore = m.score.regularTime.away
     console.info(
       `[sync] knockout ${m.homeTeam.name} vs ${m.awayTeam.name} finished ${m.score.duration}. ` +
-        `fullTime=${homeScore}-${awayScore} extraTime=${m.score.extraTime?.home ?? 'null'}-${m.score.extraTime?.away ?? 'null'} penalties=${m.score.penalties?.home ?? 'null'}-${m.score.penalties?.away ?? 'null'}`
+        `Using regularTime=${homeScore}-${awayScore} (fullTime=${m.score.fullTime.home}-${m.score.fullTime.away} includes pens)`
     )
+  } else {
+    homeScore = m.score.fullTime.home
+    awayScore = m.score.fullTime.away
   }
 
   return {
